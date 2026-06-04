@@ -21,7 +21,7 @@ Safari and Android — curated just for Toni.
   and days your *own history* shows tend to be hard.
 - **Flo-style day logging** — tap a day to pick how you feel with emoji, drag a 1–10
   mood slider, log your period & flow, and add a note.
-- **Gigi the giraffe** — when you save a hard day, your giraffe companion pops in with
+- **Murph the giraffe** — when you save a hard day, your giraffe companion pops in with
   *practical, real-world* help: walks, sunlight, foods, vitamins, breathing and
   grounding exercises.
 - **Emotion Workshop** — guided, warm writing prompts (gratitude, nostalgia, and
@@ -102,7 +102,7 @@ src/
     hormones.ts     # the physiological hormone model + explanations
     cycle.ts        # the adaptive prediction engine (the "brain")
     feelings.ts     # emoji feeling tags
-    suggestions.ts  # Gigi's coping toolkit
+    suggestions.ts  # Murph's coping toolkit
     workshop.ts     # Emotion Workshop prompts
     date.ts         # date helpers
     useModel.ts     # rebuilds the model from stored data

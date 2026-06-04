@@ -1,7 +1,7 @@
 import { useId } from 'react'
 import { motion } from 'framer-motion'
 
-/** The Toni's Weather brand mark — a glowing sun rising over clouds with Gigi peeking. */
+/** The Toni's Weather brand mark — a glowing sun rising over clouds with Murph peeking. */
 export function LogoMark({ size = 120 }: { size?: number }) {
   const uid = useId().replace(/:/g, '')
   const id = (s: string) => `${uid}-${s}`

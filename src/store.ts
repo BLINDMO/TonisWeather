@@ -26,6 +26,8 @@ interface Store extends AppState {
   // settings
   setSetting: <K extends keyof AppState['settings']>(k: K, v: AppState['settings'][K]) => void
   updateProfile: (patch: Partial<OnboardingProfile>) => void
+  // period history (post-onboarding importer)
+  addPeriods: (seeds: PeriodSeed[]) => number
   // backup
   exportData: () => string
   importData: (json: string) => { ok: boolean; error?: string }
@@ -111,6 +113,12 @@ export const useStore = create<Store>()(
 
       updateProfile: (patch) =>
         set((s) => (s.profile ? { profile: { ...s.profile, ...patch } } : {})),
+
+      addPeriods: (seeds) => {
+        const valid = seeds.filter((s) => !!s.start && s.length > 0)
+        if (valid.length) set((s) => ({ logs: seedToLogs(s.logs, valid) }))
+        return valid.length
+      },
 
       exportData: () => {
         const { version, onboarded, profile, logs, workshop, settings } = get()

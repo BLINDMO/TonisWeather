@@ -53,7 +53,7 @@ export const FONT_THEMES: FontTheme[] = [
   },
 ]
 
-export const DEFAULT_FONT_THEME = 'sunshine'
+export const DEFAULT_FONT_THEME = 'cloud'
 
 export const FONT_BY_ID: Record<string, FontTheme> = Object.fromEntries(
   FONT_THEMES.map((f) => [f.id, f]),

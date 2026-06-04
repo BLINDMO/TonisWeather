@@ -5,6 +5,7 @@ import { forecastFor, forecastWindow, daysUntilNextPeriod } from '../lib/cycle'
 import { explainHormones, HORMONES } from '../lib/hormones'
 import { todayISO, weekdayShort, shortDate } from '../lib/date'
 import { SKY, WEATHER_LABEL } from '../components/WeatherScene'
+import WeatherSky from '../components/WeatherSky'
 import WeatherGlyph from '../components/WeatherGlyph'
 import HormoneChart from '../components/HormoneChart'
 import type { ISODate, WeatherKind } from '../types'
@@ -30,7 +31,6 @@ export default function Home({ onOpenDay }: { onOpenDay: (d: ISODate) => void })
   const fc = forecastFor(model, today)
   const window = forecastWindow(model, 3, today)
   const untilPeriod = daysUntilNextPeriod(model, today)
-  const sky = SKY[fc.weather]
   const explain = explainHormones(fc.hormones, fc.phase)
   const dark = isDarkSky(fc.weather)
 
@@ -60,15 +60,9 @@ export default function Home({ onOpenDay }: { onOpenDay: (d: ISODate) => void })
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: 'spring', stiffness: 90, damping: 18 }}
         className="relative overflow-hidden rounded-[2.25rem] shadow-soft"
-        style={{ background: `linear-gradient(165deg, ${sky.from} 0%, ${sky.to} 100%)` }}
       >
-        {/* ambient depth */}
-        <div className="pointer-events-none absolute -left-16 -top-16 h-56 w-56 rounded-full bg-white/25 blur-2xl" />
-        <div className="pointer-events-none absolute -bottom-20 -right-10 h-56 w-56 rounded-full bg-white/20 blur-2xl" />
-        <div
-          className="pointer-events-none absolute inset-x-0 top-0 h-px"
-          style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent)' }}
-        />
+        {/* cinematic atmosphere */}
+        <WeatherSky kind={fc.weather} className="absolute inset-0" />
 
         <div className="relative flex flex-col items-center px-6 pb-7 pt-5 text-center">
           {/* top chips */}
@@ -95,12 +89,15 @@ export default function Home({ onOpenDay }: { onOpenDay: (d: ISODate) => void })
           <motion.div
             animate={{ y: [0, -7, 0] }}
             transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-            className="mt-3"
+            className="mt-3 drop-shadow-[0_12px_26px_rgba(18,14,46,0.28)]"
           >
             <WeatherGlyph kind={fc.weather} size={140} />
           </motion.div>
 
-          <h2 className={`mt-2 font-display text-[2rem] font-semibold leading-tight ${dark ? 'text-white' : 'text-ink'}`}>
+          <h2
+            className={`mt-2 font-display text-[2rem] font-semibold leading-tight ${dark ? 'text-white' : 'text-ink'}`}
+            style={{ textShadow: dark ? '0 2px 20px rgba(10,8,30,0.4)' : '0 1px 1px rgba(255,255,255,0.45)' }}
+          >
             {fc.headline}
           </h2>
           <div className={`mt-1 flex items-center gap-2 text-sm font-bold ${dark ? 'text-white/80' : 'text-ink/55'}`}>

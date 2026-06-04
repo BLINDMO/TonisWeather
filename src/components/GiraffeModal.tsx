@@ -92,7 +92,7 @@ export default function GiraffeModal({ open, name, onClose, onOpenWorkshop }: Pr
                 onClick={onClose}
                 className="w-full rounded-full bg-ink/90 py-4 text-base font-bold text-white transition active:scale-[0.98]"
               >
-                Thanks, Gigi 🦒
+                Thanks, Murph 🦒
               </button>
             </div>
           </motion.div>

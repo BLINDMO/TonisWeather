@@ -8,14 +8,14 @@ interface SkyTheme {
 }
 
 export const SKY: Record<WeatherKind, SkyTheme> = {
-  bright: { from: '#7cc6ff', to: '#ffe6a3', accent: '#ffd166' },
-  sunny: { from: '#8ecbff', to: '#cfeaff', accent: '#ffd166' },
-  partly: { from: '#9cc6f5', to: '#e7f1ff', accent: '#ffe2a0' },
-  cloudy: { from: '#aeb9d4', to: '#dfe5f2', accent: '#c7cfe2' },
-  drizzle: { from: '#8fa3c7', to: '#c3cfe2', accent: '#9fb3d4' },
-  rain: { from: '#6f82ad', to: '#a7b4d1', accent: '#8fa3c7' },
-  storm: { from: '#4b4a6b', to: '#7b6f9e', accent: '#c9b8ff' },
-  tornado: { from: '#3a3658', to: '#6a5f8c', accent: '#ffb3c8' },
+  bright: { from: '#4E9BE8', to: '#FCE6B8', accent: '#ffd166' },
+  sunny: { from: '#3E93E8', to: '#E4F2FD', accent: '#ffd166' },
+  partly: { from: '#4F97E2', to: '#ECF5FD', accent: '#ffe2a0' },
+  cloudy: { from: '#8492BC', to: '#E6EAF5', accent: '#c7cfe2' },
+  drizzle: { from: '#6B7DAB', to: '#D6DEEE', accent: '#9fb3d4' },
+  rain: { from: '#3A4B74', to: '#8290B6', accent: '#8fa3c7' },
+  storm: { from: '#26243F', to: '#62588C', accent: '#c9b8ff' },
+  tornado: { from: '#1F1C30', to: '#585080', accent: '#ffb3c8' },
 }
 
 const Cloud = ({

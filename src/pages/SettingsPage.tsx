@@ -4,6 +4,8 @@ import { useModel } from '../lib/useModel'
 import { format } from 'date-fns'
 import Giraffe from '../components/Giraffe'
 import { FONT_THEMES } from '../lib/fonts'
+import { addDaysISO, todayISO } from '../lib/date'
+import type { OnboardingProfile, PeriodSeed } from '../types'
 
 export default function SettingsPage() {
   const profile = useStore((s) => s.profile)
@@ -13,6 +15,7 @@ export default function SettingsPage() {
   const updateProfile = useStore((s) => s.updateProfile)
   const exportData = useStore((s) => s.exportData)
   const importData = useStore((s) => s.importData)
+  const addPeriods = useStore((s) => s.addPeriods)
   const resetAll = useStore((s) => s.resetAll)
   const model = useModel()
   const fileRef = useRef<HTMLInputElement>(null)
@@ -135,6 +138,13 @@ export default function SettingsPage() {
         </Card>
       )}
 
+      {/* Period history importer */}
+      {profile && (
+        <Card title="Period history">
+          <PeriodImporter profile={profile} onImport={addPeriods} onToast={showToast} />
+        </Card>
+      )}
+
       {/* Appearance / fonts */}
       <Card title="Font">
         <div className="grid grid-cols-2 gap-2.5">
@@ -172,8 +182,8 @@ export default function SettingsPage() {
           onToggle={() => setSetting('showScience', !settings.showScience)}
         />
         <Toggle
-          label="Gigi's check-ins"
-          desc="The giraffe pops in with help on hard days"
+          label="Murph's check-ins"
+          desc="Murph the giraffe pops in with help on hard days"
           on={settings.giraffeEnabled}
           onToggle={() => setSetting('giraffeEnabled', !settings.giraffeEnabled)}
         />
@@ -337,6 +347,162 @@ function AddPerson({ onAdd }: { onAdd: (name: string) => void }) {
       placeholder="Name"
       className="w-24 rounded-full bg-mist px-3 py-1 text-sm font-semibold text-ink outline-none"
     />
+  )
+}
+
+interface SeedItem extends PeriodSeed {
+  id: string
+}
+
+function PeriodImporter({
+  profile,
+  onImport,
+  onToast,
+}: {
+  profile: OnboardingProfile
+  onImport: (seeds: PeriodSeed[]) => number
+  onToast: (m: string) => void
+}) {
+  const [items, setItems] = useState<SeedItem[]>([])
+  const [editing, setEditing] = useState(false)
+
+  const quickFill = () => {
+    const seeds: PeriodSeed[] = []
+    for (let k = 1; k <= 11; k++) {
+      seeds.push({
+        start: addDaysISO(profile.lastPeriodStart, -k * profile.avgCycleLength),
+        length: profile.avgPeriodLength,
+      })
+    }
+    const n = onImport(seeds)
+    onToast(`Imported ${n} months of history ✨`)
+  }
+
+  const startManual = () =>
+    setItems([
+      {
+        id: crypto.randomUUID(),
+        start: addDaysISO(profile.lastPeriodStart, -profile.avgCycleLength),
+        length: profile.avgPeriodLength,
+      },
+    ])
+
+  const addAnother = () =>
+    setItems((list) => [
+      ...list,
+      {
+        id: crypto.randomUUID(),
+        start: addDaysISO(
+          list.length ? list[list.length - 1].start : profile.lastPeriodStart,
+          -profile.avgCycleLength,
+        ),
+        length: profile.avgPeriodLength,
+      },
+    ])
+
+  const update = (id: string, patch: Partial<SeedItem>) =>
+    setItems((list) => list.map((h) => (h.id === id ? { ...h, ...patch } : h)))
+  const remove = (id: string) => setItems((list) => list.filter((h) => h.id !== id))
+
+  const save = () => {
+    const n = onImport(items.map(({ start, length }) => ({ start, length })))
+    setItems([])
+    setEditing(false)
+    onToast(`Added ${n} period${n === 1 ? '' : 's'} to your history 🩸`)
+  }
+
+  return (
+    <div>
+      <p className="mb-3 text-sm leading-relaxed text-ink/55">
+        Add past periods any time — the more Murph knows, the sharper your forecast, ovulation and
+        tornado-day predictions become.
+      </p>
+
+      {!editing ? (
+        <div className="space-y-2.5">
+          <button
+            onClick={quickFill}
+            className="w-full rounded-2xl bg-dusk py-3 text-sm font-bold text-white shadow-soft active:scale-[0.98]"
+          >
+            ✨ Quick-fill my last 12 months
+          </button>
+          <button
+            onClick={() => {
+              setEditing(true)
+              if (!items.length) startManual()
+            }}
+            className="w-full rounded-2xl border-2 border-dusk/20 bg-white py-3 text-sm font-bold text-dusk active:scale-[0.98]"
+          >
+            + Add periods one by one
+          </button>
+          <p className="px-1 pt-0.5 text-center text-[11px] text-ink/40">
+            Quick-fill estimates past starts from your cycle length. You can adjust any date.
+          </p>
+        </div>
+      ) : (
+        <div>
+          <div className="max-h-[40dvh] space-y-2 overflow-y-auto no-scrollbar pr-0.5">
+            {items.map((h) => (
+              <div
+                key={h.id}
+                className="flex items-center gap-2 rounded-2xl border border-black/5 bg-white p-2.5 shadow-card"
+              >
+                <span className="text-base">🩸</span>
+                <input
+                  type="date"
+                  max={todayISO()}
+                  value={h.start}
+                  onChange={(e) => update(h.id, { start: e.target.value })}
+                  className="min-w-0 flex-1 rounded-xl bg-mist px-2 py-1.5 text-sm font-semibold text-ink outline-none"
+                />
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={() => update(h.id, { length: clamp(h.length - 1, 1, 12) })}
+                    className="h-7 w-7 rounded-full bg-mist text-sm font-bold text-dusk active:scale-90"
+                  >
+                    −
+                  </button>
+                  <span className="w-7 text-center text-sm font-bold text-ink">{h.length}d</span>
+                  <button
+                    onClick={() => update(h.id, { length: clamp(h.length + 1, 1, 12) })}
+                    className="h-7 w-7 rounded-full bg-mist text-sm font-bold text-dusk active:scale-90"
+                  >
+                    +
+                  </button>
+                </div>
+                <button onClick={() => remove(h.id)} className="px-1 text-ink/30">
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+          <button
+            onClick={addAnother}
+            className="mt-2.5 w-full rounded-2xl border-2 border-dashed border-dusk/25 py-2.5 text-sm font-bold text-dusk active:scale-[0.98]"
+          >
+            + Add another
+          </button>
+          <div className="mt-3 flex gap-3">
+            <button
+              onClick={save}
+              disabled={!items.length}
+              className="flex-1 rounded-2xl bg-dusk py-3 text-sm font-bold text-white active:scale-95 disabled:opacity-40"
+            >
+              Save {items.length || ''} period{items.length === 1 ? '' : 's'}
+            </button>
+            <button
+              onClick={() => {
+                setItems([])
+                setEditing(false)
+              }}
+              className="rounded-2xl px-4 py-3 text-sm font-semibold text-ink/50 active:scale-95"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
 

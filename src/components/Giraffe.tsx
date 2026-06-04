@@ -1,7 +1,7 @@
 import { useId } from 'react'
 import { motion } from 'framer-motion'
 
-/** Gigi — Toni's gentle giraffe companion. Refined, soft, premium. */
+/** Murph — Toni's gentle giraffe companion. Refined, soft, premium. */
 export default function Giraffe({
   size = 120,
   wave = true,
@@ -20,7 +20,7 @@ export default function Giraffe({
       height={size}
       viewBox="0 0 170 184"
       className={className}
-      aria-label="Gigi the giraffe"
+      aria-label="Murph the giraffe"
       style={{ overflow: 'visible' }}
     >
       <defs>

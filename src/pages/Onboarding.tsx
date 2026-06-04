@@ -168,7 +168,7 @@ function Welcome() {
         A gentle, science-grounded forecast for your body and your mood — where the weather is a
         metaphor for how you'll feel. Built just for you, with extra care for the tornado days.
       </p>
-      <p className="mt-5 text-xs text-ink/40">Hi, I'm Gigi. I'll be here on the hard days. 🦒</p>
+      <p className="mt-5 text-xs text-ink/40">Hi, I'm Murph. I'll be here on the hard days. 🦒</p>
     </div>
   )
 }
