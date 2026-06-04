@@ -200,39 +200,40 @@ export function forecastFor(model: CycleModel, date: ISODate): DayForecast {
   const historicalLow = model.historicalLowDays.has(cycleDay)
 
   // ── Tornado calibration ───────────────────────────────────────────────────
-  // Three WATCH windows — known periods of hormonal flux where the nervous
-  // system is more vulnerable to rapid signal change, regardless of severity:
-  //
+  // Two WATCH windows — known periods of hormonal flux:
   //  1. Around ovulation (±1 day): estrogen peak → brief crash can cause
   //     sensitivity spikes even on an otherwise bright day.
   //  2. Pre-period (last 3 days): steep progesterone + estrogen withdrawal
   //     disrupts the GABA / serotonin axis — the core PMDD trigger window.
-  //  3. Post-period (first 2 days of follicular): estrogen is rising from its
-  //     nadir but serotonin transporter upregulation lags ~24–48 h. The signal
-  //     is still levelling; unexpected fluctuations are more likely here.
   //
-  // Watches are advisory — they do NOT change the weather reading. A day only
-  // escalates to a full TORNADO once her own mood history confirms a genuine
-  // crash on that specific cycle day. Real tornadoes stay rare.
+  // The post-period window (first 2 days of follicular) is handled separately
+  // as a lighter "weather aware" advisory — not a tornado watch.
+  //
+  // A day only escalates to a full TORNADO once her own mood history confirms
+  // a genuine crash on that cycle day. Real tornadoes stay rare.
   const hist2 = model.historicalMood[cycleDay]
-  const ovWatch        = cycleDay >= geo.ovulationDay - 1 && cycleDay <= geo.ovulationDay + 1
-  const premenWatch    = cycleDay >= geo.cycleLength - 2      // last 3 days of cycle
-  const postPeriodWatch = phase === 'follicular' && cycleDay <= geo.periodLength + 2
+  const ovWatch     = cycleDay >= geo.ovulationDay - 1 && cycleDay <= geo.ovulationDay + 1
+  const premenWatch = cycleDay >= geo.cycleLength - 2   // last 3 days of cycle
+  // Post-period: estrogen rising from nadir but serotonin response lags ~24–48 h.
+  // Shown as partly cloudy + a gentle weather-aware advisory (not a watch).
+  const isWeatherAware = phase === 'follicular' && cycleDay <= geo.periodLength + 2
 
   let tornadoLevel: DayForecast['tornadoLevel'] = 'none'
-  if (ovWatch || premenWatch || postPeriodWatch) tornadoLevel = 'watch'
-  // Mood history escalates to tornado: ≥2 samples on this cycle day averaging ≤4.2,
-  // AND the recorded average itself was a genuine crash (≤3.2).
+  if (ovWatch || premenWatch) tornadoLevel = 'watch'
+  // Mood history escalates to tornado: ≥2 samples averaging ≤4.2, with the
+  // recorded average itself confirming a genuine crash (≤3.2).
   if (historicalLow && hist2 != null && hist2 <= 3.2) tornadoLevel = 'tornado'
   const tornado = tornadoLevel === 'tornado'
 
-  const isPredictedPeriod  = cycleDay <= geo.periodLength
+  const isPredictedPeriod   = cycleDay <= geo.periodLength
   const isPredictedOvulation = cycleDay === geo.ovulationDay
-  const isFertile          = cycleDay >= geo.ovulationDay - 5 && cycleDay <= geo.ovulationDay
+  const isFertile            = cycleDay >= geo.ovulationDay - 5 && cycleDay <= geo.ovulationDay
 
-  // Weather reflects her hormones naturally; a WATCH is an overlay advisory and
-  // does NOT turn a bright ovulation day into a storm. Only a true tornado does.
-  const weather = weatherFor(outlook, phase, tornadoLevel)
+  // Post-period days are always shown as partly cloudy — the science-backed
+  // recalibration window. Mood-history escalation to tornado still applies.
+  const rawWeather = weatherFor(outlook, phase, tornadoLevel)
+  const weather: WeatherKind = (isWeatherAware && tornadoLevel !== 'tornado') ? 'partly' : rawWeather
+
   let { headline, blurb } = describeWeather(weather, phase)
   if (tornadoLevel === 'tornado') {
     headline = 'Tornado warning'
@@ -241,15 +242,14 @@ export function forecastFor(model: CycleModel, date: ISODate): DayForecast {
       headline = 'Tornado watch'
       blurb =
         'Estrogen and progesterone are descending toward their lowest point of the cycle — the steepest part of the drop. How sharply this affects mood varies day to day; it is the rate of change in the hormonal signal, not just the level, that the nervous system responds to.'
-    } else if (postPeriodWatch) {
-      headline = 'Tornado watch'
-      blurb =
-        'Hormones are levelling out after their sharp fall — and that recalibration window can produce more fluctuation than expected. If the weather starts to build today, act on it early rather than waiting to see.'
     } else {
       // ovWatch
       blurb =
         'Estrogen peaks around ovulation, which can also bring a wave of sensitivity, anxiety or irritability for you. The skies look bright — just a gentle heads-up to be kind to yourself today.'
     }
+  } else if (isWeatherAware) {
+    blurb =
+      'Hormones are levelling out after their sharp fall — and that recalibration window can produce more fluctuation than expected. If the weather starts to build today, act on it early rather than waiting to see.'
   }
 
   return {
@@ -265,6 +265,7 @@ export function forecastFor(model: CycleModel, date: ISODate): DayForecast {
     isPredictedPeriod,
     isPredictedOvulation,
     isFertile,
+    isWeatherAware,
     confidence: model.confidence,
     headline,
     blurb,

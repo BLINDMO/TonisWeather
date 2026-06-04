@@ -77,15 +77,16 @@ export default function CalendarPage({ onOpenDay }: { onOpenDay: (d: ISODate) =>
           const fc  = forecastFor(model, iso)
           const log = logs[iso]
 
-          const inMonth       = isSameMonth(d, anchor)
-          const isToday       = iso === today
-          const actualPeriod  = !!log?.period
-          const isPast        = iso <= today
-          const predicted     = fc.isPredictedPeriod && !isPast && !actualPeriod
-          const tornado       = fc.tornadoLevel === 'tornado'
-          const watch         = fc.tornadoLevel === 'watch'
-          const hasMood       = typeof log?.mood === 'number'
-          const isOvulation   = fc.isPredictedOvulation
+          const inMonth        = isSameMonth(d, anchor)
+          const isToday        = iso === today
+          const actualPeriod   = !!log?.period
+          const isPast         = iso <= today
+          const predicted      = fc.isPredictedPeriod && !isPast && !actualPeriod
+          const tornado        = fc.tornadoLevel === 'tornado'
+          const watch          = fc.tornadoLevel === 'watch'
+          const hasMood        = typeof log?.mood === 'number'
+          const isOvulation    = fc.isPredictedOvulation
+          const weatherAware   = fc.isWeatherAware && !tornado
 
           /* ── cell background ── */
           let bg     = ''
@@ -160,6 +161,9 @@ export default function CalendarPage({ onOpenDay }: { onOpenDay: (d: ISODate) =>
                 {watch && !tornado && (
                   <span className="block h-[4px] w-[4px] rounded-full bg-[#A890D0]" />
                 )}
+                {weatherAware && (
+                  <span className="block h-[4px] w-[4px] rounded-full bg-[#5BA4C8]" />
+                )}
               </div>
             </button>
           )
@@ -173,6 +177,7 @@ export default function CalendarPage({ onOpenDay }: { onOpenDay: (d: ISODate) =>
         <Chip gradient="linear-gradient(90deg,#FFF5C4,#FFE07A)" ring label="Ovulation" />
         <Chip gradient="linear-gradient(90deg,#EAE0FB,#CFC0F8)" label="Tornado" dot="#7460B8" />
         <Chip gradient="linear-gradient(90deg,#F2EEFE,#E4D9FC)" label="Watch" dot="#A890D0" />
+        <Chip label="Weather aware" dot="#5BA4C8" />
       </div>
     </div>
   )

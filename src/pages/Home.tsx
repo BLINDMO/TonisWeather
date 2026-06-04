@@ -88,6 +88,10 @@ export default function Home({ onOpenDay }: { onOpenDay: (d: ISODate) => void })
               <span className={`pill ${dark ? 'bg-white/22 text-white' : 'bg-[#7b6f9e]/15 text-[#5b5184]'}`}>
                 <TornadoDot /> Tornado watch
               </span>
+            ) : fc.isWeatherAware ? (
+              <span className="pill bg-white/60 text-sky-700/80 backdrop-blur-sm">
+                <WeatherAwareIcon /> Weather aware
+              </span>
             ) : null}
           </div>
 
@@ -279,6 +283,23 @@ function TornadoDot({ solid = false }: { solid?: boolean }) {
         strokeLinecap="round"
         opacity={solid ? 1 : 0.85}
       />
+    </svg>
+  )
+}
+
+function WeatherAwareIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 22 22" fill="none" className="inline-block">
+      {/* cloud outline */}
+      <path
+        d="M6 17a4 4 0 1 1 .4-7.97A5 5 0 0 1 17 11h-1a4 4 0 0 1-10 6z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+        opacity="0.85"
+      />
+      {/* small dot underneath — "heads up" signal */}
+      <circle cx="11" cy="19.5" r="1.1" fill="currentColor" opacity="0.70" />
     </svg>
   )
 }
