@@ -65,6 +65,29 @@ npm run build      # production build → dist/
 npm run preview    # preview the production build
 ```
 
+## Deploy (GitHub Pages)
+
+The app is published to the **`gh-pages`** branch and served at
+**https://blindmo.github.io/TonisWeather/**.
+
+One-time setup — enable Pages:
+
+1. Go to the repo **Settings → Pages**.
+2. Under **Build and deployment → Source**, choose **Deploy from a branch**.
+3. Branch: **`gh-pages`**, folder: **`/ (root)`** → **Save**.
+4. Wait ~1 minute, then open the URL above.
+
+To redeploy after changing the app:
+
+```bash
+bash scripts/deploy-gh-pages.sh
+```
+
+> A GitHub Actions workflow (`.github/workflows/deploy.yml`) is also included for
+> environments that have hosted runners — run it from the Actions tab and set the
+> Pages source to "GitHub Actions". The build environment used here had no runners,
+> hence the branch-based deploy.
+
 ### Install on an iPhone
 
 1. Open the deployed URL in **Safari**.
