@@ -69,7 +69,7 @@ export default function Splash({ minDuration = 2800 }: { minDuration?: number })
           <motion.div
             initial={{ opacity: 0, y: 52, scale: 0.58, rotate: -11 }}
             animate={{ opacity: 1, y: 0, scale: 1, rotate: 0 }}
-            transition={{ type: 'spring', stiffness: 102, damping: 11, delay: 0.26 }}
+            transition={{ type: 'spring', stiffness: 130, damping: 14, delay: 0.04 }}
             className="relative"
           >
             {/* Burst of light at the moment the logo arrives */}
@@ -102,10 +102,10 @@ export default function Splash({ minDuration = 2800 }: { minDuration?: number })
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{
-                  delay: 0.82 + i * 0.048,
+                  delay: 0.40 + i * 0.044,
                   type: 'spring',
-                  stiffness: 195,
-                  damping: 15,
+                  stiffness: 210,
+                  damping: 16,
                 }}
               >
                 {ch}
@@ -117,7 +117,7 @@ export default function Splash({ minDuration = 2800 }: { minDuration?: number })
             className="relative mt-2 text-[10px] font-bold tracking-[0.25em] text-white/58"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 1.55, duration: 0.6 }}
+            transition={{ delay: 0.96, duration: 0.55 }}
           >
             YOUR FORECAST FOR BODY &amp; MOOD
           </motion.p>
@@ -127,7 +127,7 @@ export default function Splash({ minDuration = 2800 }: { minDuration?: number })
             className="relative mt-9 h-[3px] w-44 overflow-hidden rounded-full bg-white/14"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
+            transition={{ delay: 0.18 }}
           >
             <motion.div
               className="h-full rounded-full"
@@ -151,20 +151,23 @@ function SplashCanvas({ duration }: { duration: number }) {
   useEffect(() => {
     const canvas = ref.current
     if (!canvas) return
-    const ctx = canvas.getContext('2d')
+    // alpha:false avoids per-pixel compositing against what's below — measurable
+    // perf improvement for a fullscreen canvas that always paints a full background.
+    const ctx = canvas.getContext('2d', { alpha: false })
     if (!ctx) return
 
-    let W = 0,
-      H = 0
+    let W = 0, H = 0
     let raf = 0
-    let startTs: number | null = null
+    // Start clock at effect mount so no frames are wasted while canvas sizes up.
+    const startTs = performance.now()
 
     const resize = () => {
-      const dpr = window.devicePixelRatio || 1
-      W = canvas.offsetWidth
-      H = canvas.offsetHeight
-      canvas.width = W * dpr
-      canvas.height = H * dpr
+      const dpr = Math.min(window.devicePixelRatio || 1, 2)
+      // Use window dimensions directly — the canvas is always fixed inset-0.
+      W = window.innerWidth
+      H = window.innerHeight
+      canvas.width  = Math.round(W * dpr)
+      canvas.height = Math.round(H * dpr)
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     }
     resize()
@@ -197,8 +200,8 @@ function SplashCanvas({ duration }: { duration: number }) {
     ]
 
     const render = (ts: number) => {
-      if (W === 0 || H === 0) { raf = requestAnimationFrame(render); return }
-      if (!startTs) startTs = ts
+      raf = requestAnimationFrame(render)
+      if (W === 0 || H === 0) return
       const elapsed = (ts - startTs) / 1000
       const progress = Math.min(elapsed / (duration / 1000), 1)
       const skyP = ease(Math.max(0, Math.min((progress - 0.08) / 0.74, 1)))
@@ -223,7 +226,7 @@ function SplashCanvas({ duration }: { duration: number }) {
           const cy = H * rib.yf
           const amp = H * rib.amp
           const thick = H * rib.th
-          const N = 110
+          const N = 64
           const dx = W / N
           const wt = (px: number) => cy - thick / 2 + amp * Math.sin((px / W) * Math.PI * rib.freq + rib.ph + elapsed * rib.spd)
           const wb = (px: number) => cy + thick / 2 + amp * Math.sin((px / W) * Math.PI * rib.freq + rib.ph + elapsed * rib.spd + 0.48)
@@ -293,7 +296,6 @@ function SplashCanvas({ duration }: { duration: number }) {
       ctx.fillRect(0, 0, W, H)
       ctx.globalCompositeOperation = 'source-over'
 
-      raf = requestAnimationFrame(render)
     }
 
     raf = requestAnimationFrame(render)
