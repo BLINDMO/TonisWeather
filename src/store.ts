@@ -1,9 +1,11 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type {
+  AdaptationEntry,
   AppState,
   DayLog,
   ISODate,
+  ModelSnapshot,
   OnboardingProfile,
   PeriodSeed,
   WorkshopEntry,
@@ -28,6 +30,9 @@ interface Store extends AppState {
   updateProfile: (patch: Partial<OnboardingProfile>) => void
   // period history (post-onboarding importer)
   addPeriods: (seeds: PeriodSeed[]) => number
+  // adaptation log
+  addAdaptation: (entry: Omit<AdaptationEntry, 'id' | 'timestamp'>) => void
+  updateModelSnapshot: (snap: ModelSnapshot) => void
   // backup
   exportData: () => string
   importData: (json: string) => { ok: boolean; error?: string }
@@ -48,6 +53,8 @@ const initial: AppState = {
   logs: {},
   workshop: [],
   settings: { showScience: true, giraffeEnabled: true, fontTheme: DEFAULT_FONT_THEME },
+  adaptationLog: [],
+  lastModelSnapshot: null,
 }
 
 /** Expand period seeds (start + length) into per-day period logs. */
@@ -120,6 +127,16 @@ export const useStore = create<Store>()(
         return valid.length
       },
 
+      addAdaptation: (entry) =>
+        set((s) => ({
+          adaptationLog: [
+            { ...entry, id: crypto.randomUUID(), timestamp: Date.now() },
+            ...s.adaptationLog,
+          ],
+        })),
+
+      updateModelSnapshot: (snap) => set({ lastModelSnapshot: snap }),
+
       exportData: () => {
         const { version, onboarded, profile, logs, workshop, settings } = get()
         return JSON.stringify(
@@ -148,6 +165,8 @@ export const useStore = create<Store>()(
             logs: data.logs ?? {},
             workshop: data.workshop ?? [],
             settings: { ...initial.settings, ...(data.settings ?? {}) },
+            adaptationLog: data.adaptationLog ?? [],
+            lastModelSnapshot: data.lastModelSnapshot ?? null,
           })
           return { ok: true }
         } catch (e) {

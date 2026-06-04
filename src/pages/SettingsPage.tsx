@@ -1,11 +1,11 @@
 import { useRef, useState } from 'react'
 import { useStore } from '../store'
 import { useModel } from '../lib/useModel'
-import { format } from 'date-fns'
+import { format, formatDistanceToNow } from 'date-fns'
 import Giraffe from '../components/Giraffe'
 import { FONT_THEMES } from '../lib/fonts'
 import { addDaysISO, todayISO } from '../lib/date'
-import type { OnboardingProfile, PeriodSeed } from '../types'
+import type { AdaptationEntry, OnboardingProfile, PeriodSeed } from '../types'
 
 export default function SettingsPage() {
   const profile = useStore((s) => s.profile)
@@ -17,6 +17,7 @@ export default function SettingsPage() {
   const importData = useStore((s) => s.importData)
   const addPeriods = useStore((s) => s.addPeriods)
   const resetAll = useStore((s) => s.resetAll)
+  const adaptationLog = useStore((s) => s.adaptationLog)
   const model = useModel()
   const fileRef = useRef<HTMLInputElement>(null)
   const [toast, setToast] = useState('')
@@ -62,6 +63,9 @@ export default function SettingsPage() {
         <Stat label="Mood logs" value={moodLogs} />
         <Stat label="Cycles learned" value={model?.cyclesDetected ?? 0} />
       </div>
+
+      {/* Adaptation log */}
+      <AdaptationLog entries={adaptationLog} confidence={model?.confidence ?? null} />
 
       {/* Profile */}
       {profile && (
@@ -503,6 +507,125 @@ function PeriodImporter({
         </div>
       )}
     </div>
+  )
+}
+
+function AdaptationLog({
+  entries,
+  confidence,
+}: {
+  entries: AdaptationEntry[]
+  confidence: number | null
+}) {
+  const [expanded, setExpanded] = useState(false)
+  const shown = expanded ? entries : entries.slice(0, 3)
+  const pct = confidence !== null ? Math.round(confidence * 100) : null
+
+  return (
+    <div className="card mb-3 p-5">
+      {/* Header row */}
+      <div className="mb-3 flex items-start justify-between gap-2">
+        <div>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-ink/40">
+            How the app is learning
+          </h3>
+          <p className="mt-0.5 text-[13px] text-ink/55">
+            {entries.length === 0
+              ? 'Start logging to see adaptations here.'
+              : `Adapted ${entries.length} time${entries.length === 1 ? '' : 's'} from your data`}
+            {pct !== null && (
+              <span className="ml-1.5 inline-flex items-center gap-1 rounded-full bg-dusk/10 px-2 py-0.5 text-[11px] font-bold text-dusk">
+                {pct}% accuracy
+              </span>
+            )}
+          </p>
+        </div>
+      </div>
+
+      {/* Confidence bar */}
+      {confidence !== null && (
+        <div className="mb-4">
+          <div className="flex items-center justify-between text-[10px] font-semibold text-ink/40 mb-1">
+            <span>Forecast accuracy</span>
+            <span>{pct}%</span>
+          </div>
+          <div className="h-2 w-full overflow-hidden rounded-full bg-black/6">
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{
+                width: `${pct}%`,
+                background: confidence >= 0.65
+                  ? 'linear-gradient(90deg,#4CC8A4,#7BD6A8)'
+                  : confidence >= 0.5
+                  ? 'linear-gradient(90deg,#FFBE30,#FFD166)'
+                  : 'linear-gradient(90deg,#9A7CF0,#B09CF0)',
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Log entries */}
+      {entries.length > 0 && (
+        <div className="space-y-3">
+          {shown.map((entry) => (
+            <AdaptationRow key={entry.id} entry={entry} />
+          ))}
+          {entries.length > 3 && (
+            <button
+              onClick={() => setExpanded((v) => !v)}
+              className="mt-1 w-full rounded-2xl border border-black/8 py-2 text-[12px] font-bold text-dusk/70 active:scale-[0.98]"
+            >
+              {expanded ? 'Show less' : `Show ${entries.length - 3} more`}
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function AdaptationRow({ entry }: { entry: AdaptationEntry }) {
+  const [open, setOpen] = useState(false)
+  const ago = formatDistanceToNow(entry.timestamp, { addSuffix: true })
+  const when = format(entry.timestamp, 'MMM d · h:mm a')
+
+  return (
+    <button
+      onClick={() => setOpen((v) => !v)}
+      className="w-full text-left"
+    >
+      <div className="flex items-start gap-3">
+        {/* Icon */}
+        <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-dusk/10 text-sm">
+          🧠
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-baseline justify-between gap-2">
+            <span className="text-[13px] font-bold text-ink leading-snug">{entry.headline}</span>
+            <span className="shrink-0 text-[10px] text-ink/35">{ago}</span>
+          </div>
+          {/* Change list — shown inline always (collapsed after first 2 if many) */}
+          <div className={`mt-1 space-y-0.5 ${open ? '' : ''}`}>
+            {(open ? entry.changes : entry.changes.slice(0, 2)).map((c, i) => (
+              <div key={i} className="flex flex-wrap items-baseline gap-x-1.5 text-[11px]">
+                <span className="font-semibold text-ink/60">{c.field}:</span>
+                <span className="text-ink/40">{c.from}</span>
+                <span className="text-ink/25">→</span>
+                <span className="font-semibold text-dusk/80">{c.to}</span>
+                {c.detail && <span className="block w-full text-[10px] text-ink/35">{c.detail}</span>}
+              </div>
+            ))}
+            {!open && entry.changes.length > 2 && (
+              <p className="text-[10px] text-ink/35">
+                +{entry.changes.length - 2} more — tap to expand
+              </p>
+            )}
+          </div>
+          <p className="mt-0.5 text-[10px] text-ink/28">{when}</p>
+        </div>
+      </div>
+    </button>
   )
 }
 

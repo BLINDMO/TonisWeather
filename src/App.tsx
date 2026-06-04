@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useStore } from './store'
 import { applyFontTheme } from './lib/fonts'
+import { useAdaptationTracker } from './lib/useAdaptationTracker'
 import Splash from './components/Splash'
 import Onboarding from './pages/Onboarding'
 import Home from './pages/Home'
@@ -21,6 +22,9 @@ export default function App() {
   useEffect(() => {
     applyFontTheme(fontTheme)
   }, [fontTheme])
+
+  // Watches every model rebuild and records meaningful changes to the adaptation log
+  useAdaptationTracker()
 
   const [tab, setTab] = useState<Tab>('home')
   const [openDate, setOpenDate] = useState<ISODate | null>(null)

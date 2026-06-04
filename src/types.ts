@@ -64,6 +64,33 @@ export interface OnboardingProfile {
   completedAt: number
 }
 
+/** One field that changed during a model adaptation (before → after). */
+export interface AdaptationChange {
+  field: string
+  from: string
+  to: string
+  detail?: string
+}
+
+/** A single event where the model learned something new from logged data. */
+export interface AdaptationEntry {
+  id: string
+  timestamp: number
+  headline: string
+  changes: AdaptationChange[]
+}
+
+/** Snapshot of key model metrics, persisted so cross-session diffs work correctly. */
+export interface ModelSnapshot {
+  cyclesDetected: number
+  confidence: number
+  cycleLength: number
+  periodLength: number
+  ovulationDay: number
+  lowDaysCount: number
+  totalMoodLogs: number
+}
+
 export interface AppState {
   version: number
   onboarded: boolean
@@ -75,6 +102,10 @@ export interface AppState {
     giraffeEnabled: boolean
     fontTheme: string
   }
+  /** Ordered log of every time the model adapted to new data (newest first). */
+  adaptationLog: AdaptationEntry[]
+  /** Last saved model snapshot — used to diff across page reloads. */
+  lastModelSnapshot: ModelSnapshot | null
 }
 
 /** A past period to seed during onboarding (start date + how many days it lasted). */
