@@ -163,6 +163,8 @@ export interface DayForecast {
   isPredictedPeriod: boolean
   isPredictedOvulation: boolean
   isFertile: boolean
+  /** True for the 2 days right after the period ends — a gentle hormonal recalibration window. */
+  isWeatherAware: boolean
   /** 0…1 — how confident the model is, based on amount + regularity of data. */
   confidence: number
   headline: string
