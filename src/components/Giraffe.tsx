@@ -1,6 +1,7 @@
+import { useId } from 'react'
 import { motion } from 'framer-motion'
 
-/** Gigi the giraffe — Toni's gentle companion. */
+/** Gigi — Toni's gentle giraffe companion. Refined, soft, premium. */
 export default function Giraffe({
   size = 120,
   wave = true,
@@ -10,83 +11,129 @@ export default function Giraffe({
   wave?: boolean
   className?: string
 }) {
+  const uid = useId().replace(/:/g, '')
+  const id = (s: string) => `${uid}-${s}`
+
   return (
     <svg
       width={size}
       height={size}
-      viewBox="0 0 160 160"
+      viewBox="0 0 170 184"
       className={className}
       aria-label="Gigi the giraffe"
+      style={{ overflow: 'visible' }}
     >
       <defs>
-        <linearGradient id="gi-body" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#ffd98a" />
-          <stop offset="100%" stopColor="#f6b85e" />
+        <linearGradient id={id('body')} x1="0" y1="0" x2="0.4" y2="1">
+          <stop offset="0%" stopColor="#FFE0A0" />
+          <stop offset="60%" stopColor="#FCC76A" />
+          <stop offset="100%" stopColor="#F2B24E" />
         </linearGradient>
-        <radialGradient id="gi-cheek" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#ffb0c4" />
-          <stop offset="100%" stopColor="#ffb0c4" stopOpacity="0" />
+        <linearGradient id={id('belly')} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#FFF3DC" />
+          <stop offset="100%" stopColor="#FFE6BE" />
+        </linearGradient>
+        <radialGradient id={id('cheek')} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#FF9FB6" stopOpacity="0.75" />
+          <stop offset="100%" stopColor="#FF9FB6" stopOpacity="0" />
         </radialGradient>
+        <filter id={id('soft')} x="-40%" y="-40%" width="180%" height="180%">
+          <feDropShadow dx="0" dy="4" stdDeviation="5" floodColor="#C98B3F" floodOpacity="0.28" />
+        </filter>
       </defs>
 
-      {/* gentle floating */}
+      {/* ground shadow */}
+      <ellipse cx="86" cy="170" rx="44" ry="9" fill="#C98B3F" opacity="0.14" />
+
       <motion.g
         animate={{ y: [0, -5, 0] }}
-        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+        transition={{ duration: 4.2, repeat: Infinity, ease: 'easeInOut' }}
       >
-        {/* neck */}
-        <rect x="66" y="78" width="22" height="44" rx="11" fill="url(#gi-body)" />
-        <circle cx="72" cy="92" r="4" fill="#e09a45" />
-        <circle cx="82" cy="104" r="4" fill="#e09a45" />
+        {/* legs */}
+        <g fill={`url(#${id('body')})`}>
+          <rect x="64" y="138" width="17" height="30" rx="8.5" />
+          <rect x="92" y="138" width="17" height="30" rx="8.5" />
+          <ellipse cx="72.5" cy="167" rx="10" ry="6" fill="#E79A3F" />
+          <ellipse cx="100.5" cy="167" rx="10" ry="6" fill="#E79A3F" />
+        </g>
 
         {/* body */}
-        <ellipse cx="80" cy="128" rx="34" ry="24" fill="url(#gi-body)" />
-        <circle cx="66" cy="124" r="4" fill="#e09a45" />
-        <circle cx="92" cy="120" r="4" fill="#e09a45" />
-        <circle cx="84" cy="136" r="4" fill="#e09a45" />
+        <ellipse cx="86" cy="124" rx="40" ry="33" fill={`url(#${id('body')})`} filter={`url(#${id('soft')})`} />
+        <ellipse cx="86" cy="132" rx="24" ry="20" fill={`url(#${id('belly')})`} />
+        {/* body spots */}
+        <g fill="#E79A3F" opacity="0.55">
+          <ellipse cx="58" cy="116" rx="6" ry="7" transform="rotate(-18 58 116)" />
+          <ellipse cx="112" cy="118" rx="6.5" ry="7.5" transform="rotate(14 112 118)" />
+          <ellipse cx="106" cy="142" rx="5.5" ry="6" />
+        </g>
 
         {/* waving arm */}
         <motion.g
-          style={{ transformOrigin: '108px 122px' }}
-          animate={wave ? { rotate: [0, -22, 6, -22, 0] } : {}}
-          transition={{ duration: 1.8, repeat: Infinity, repeatDelay: 1.2, ease: 'easeInOut' }}
+          style={{ transformOrigin: '118px 116px' }}
+          animate={wave ? { rotate: [0, -24, 4, -24, 0] } : {}}
+          transition={{ duration: 1.9, repeat: Infinity, repeatDelay: 1.4, ease: 'easeInOut' }}
         >
-          <rect x="104" y="116" width="12" height="26" rx="6" fill="url(#gi-body)" />
-          <circle cx="110" cy="142" r="7" fill="#ffd98a" />
+          <rect x="112" y="104" width="15" height="30" rx="7.5" fill={`url(#${id('body')})`} />
+          <circle cx="119.5" cy="134" r="8.5" fill="#FCC76A" />
         </motion.g>
+        <rect x="46" y="106" width="15" height="28" rx="7.5" fill={`url(#${id('body')})`} />
+        <circle cx="53.5" cy="133" r="8.5" fill="#FCC76A" />
 
-        {/* head */}
-        <g>
+        {/* neck */}
+        <path d="M74 96 Q72 70 80 52 L98 56 Q94 78 96 100 Z" fill={`url(#${id('body')})`} />
+        <g fill="#E79A3F" opacity="0.5">
+          <circle cx="82" cy="74" r="4" />
+          <circle cx="90" cy="88" r="3.6" />
+        </g>
+
+        {/* head group */}
+        <motion.g
+          animate={{ rotate: [-2.5, 2.5, -2.5] }}
+          transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ transformOrigin: '84px 44px' }}
+        >
           {/* ossicones */}
-          <line x1="62" y1="44" x2="60" y2="30" stroke="#f6b85e" strokeWidth="4" strokeLinecap="round" />
-          <circle cx="59" cy="28" r="5" fill="#c98b3f" />
-          <line x1="78" y1="44" x2="80" y2="30" stroke="#f6b85e" strokeWidth="4" strokeLinecap="round" />
-          <circle cx="81" cy="28" r="5" fill="#c98b3f" />
-
+          <g>
+            <rect x="70" y="8" width="6" height="18" rx="3" fill="#F2B24E" transform="rotate(-10 73 17)" />
+            <circle cx="71" cy="8" r="6" fill="#D98E3C" />
+            <rect x="92" y="8" width="6" height="18" rx="3" fill="#F2B24E" transform="rotate(10 95 17)" />
+            <circle cx="97" cy="8" r="6" fill="#D98E3C" />
+          </g>
           {/* ears */}
-          <ellipse cx="48" cy="54" rx="9" ry="6" fill="#f6b85e" transform="rotate(-20 48 54)" />
-          <ellipse cx="92" cy="54" rx="9" ry="6" fill="#f6b85e" transform="rotate(20 92 54)" />
+          <ellipse cx="56" cy="36" rx="12" ry="7.5" fill="#F2B24E" transform="rotate(-26 56 36)" />
+          <ellipse cx="58" cy="36" rx="6" ry="3.6" fill="#FFE6BE" transform="rotate(-26 58 36)" />
+          <ellipse cx="112" cy="36" rx="12" ry="7.5" fill="#F2B24E" transform="rotate(26 112 36)" />
+          <ellipse cx="110" cy="36" rx="6" ry="3.6" fill="#FFE6BE" transform="rotate(26 110 36)" />
 
           {/* face */}
-          <ellipse cx="70" cy="60" rx="26" ry="24" fill="url(#gi-body)" />
+          <path
+            d="M50 44 Q50 22 84 22 Q118 22 118 44 Q118 66 96 70 Q84 72 72 70 Q50 66 50 44 Z"
+            fill={`url(#${id('body')})`}
+            filter={`url(#${id('soft')})`}
+          />
           {/* snout */}
-          <ellipse cx="70" cy="74" rx="18" ry="13" fill="#fff0d6" />
-          <ellipse cx="63" cy="74" rx="2.4" ry="3.4" fill="#9c6b32" />
-          <ellipse cx="77" cy="74" rx="2.4" ry="3.4" fill="#9c6b32" />
+          <ellipse cx="84" cy="58" rx="22" ry="15" fill={`url(#${id('belly')})`} />
+          <ellipse cx="75" cy="57" rx="2.6" ry="3.8" fill="#A06A30" />
+          <ellipse cx="93" cy="57" rx="2.6" ry="3.8" fill="#A06A30" />
+          <path d="M78 64 Q84 69 90 64" stroke="#C98B3F" strokeWidth="2.4" fill="none" strokeLinecap="round" />
 
           {/* eyes */}
-          <circle cx="60" cy="58" r="5.4" fill="#3a2e22" />
-          <circle cx="58.4" cy="56.4" r="1.8" fill="#fff" />
-          <circle cx="82" cy="58" r="5.4" fill="#3a2e22" />
-          <circle cx="80.4" cy="56.4" r="1.8" fill="#fff" />
-
-          {/* smile */}
-          <path d="M62 80 Q70 86 78 80" stroke="#c4773a" strokeWidth="2.4" fill="none" strokeLinecap="round" />
+          <g>
+            <ellipse cx="70" cy="42" rx="7" ry="8" fill="#fff" />
+            <ellipse cx="98" cy="42" rx="7" ry="8" fill="#fff" />
+            <circle cx="71" cy="43" r="4.6" fill="#3A2E22" />
+            <circle cx="99" cy="43" r="4.6" fill="#3A2E22" />
+            <circle cx="69.3" cy="41" r="1.7" fill="#fff" />
+            <circle cx="97.3" cy="41" r="1.7" fill="#fff" />
+            {/* soft eyelids for a gentle look */}
+            <path d="M63 37 Q70 33 77 37" stroke="#E79A3F" strokeWidth="2" fill="none" strokeLinecap="round" />
+            <path d="M91 37 Q98 33 105 37" stroke="#E79A3F" strokeWidth="2" fill="none" strokeLinecap="round" />
+          </g>
 
           {/* cheeks */}
-          <circle cx="50" cy="68" r="8" fill="#ffb0c4" opacity="0.55" />
-          <circle cx="90" cy="68" r="8" fill="#ffb0c4" opacity="0.55" />
-        </g>
+          <circle cx="58" cy="52" r="9" fill={`url(#${id('cheek')})`} />
+          <circle cx="110" cy="52" r="9" fill={`url(#${id('cheek')})`} />
+        </motion.g>
       </motion.g>
     </svg>
   )

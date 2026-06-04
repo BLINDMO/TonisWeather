@@ -199,32 +199,39 @@ export function forecastFor(model: CycleModel, date: ISODate): DayForecast {
 
   const historicalLow = model.historicalLowDays.has(cycleDay)
 
-  // ── Tornado calibration ───────────────────────────────────────────────────
-  // Real tornado days are RARE (Toni gets ~1 every few months). So the predicted
-  // late-luteal window is only a soft "watch". A day escalates to a full
-  // "tornado" when her OWN history confirms a genuine crash on this cycle day,
-  // or the blended outlook is extremely low.
+  // ── Tornado calibration (2.0) ─────────────────────────────────────────────
+  // WATCH days are Toni's two known-vulnerable windows, regardless of severity:
+  //   • around ovulation (the day before, of, and after) — estrogen swings
+  //   • the 3 days before her period — the steep PMDD hormone withdrawal
+  // A day only escalates to a full TORNADO once HER OWN tracked history shows a
+  // genuine crash on that cycle day. Real tornadoes stay rare.
   const hist2 = model.historicalMood[cycleDay]
-  const inLateLuteal = phase === 'late-luteal'
+  const ovWatch = cycleDay >= geo.ovulationDay - 1 && cycleDay <= geo.ovulationDay + 1
+  const premenWatch = cycleDay >= geo.cycleLength - 2 // last 3 days before next period
   let tornadoLevel: DayForecast['tornadoLevel'] = 'none'
-  if (inLateLuteal && model.severity !== 'mild') tornadoLevel = 'watch'
-  if (inLateLuteal && model.severity === 'mild' && historicalLow) tornadoLevel = 'watch'
+  if (ovWatch || premenWatch) tornadoLevel = 'watch'
   if (historicalLow && hist2 != null && hist2 <= 3.2) tornadoLevel = 'tornado'
-  if (outlook <= 2.6) tornadoLevel = 'tornado'
   const tornado = tornadoLevel === 'tornado'
 
   const isPredictedPeriod = cycleDay <= geo.periodLength
   const isPredictedOvulation = cycleDay === geo.ovulationDay
   const isFertile = cycleDay >= geo.ovulationDay - 5 && cycleDay <= geo.ovulationDay
 
+  // Weather reflects her hormones naturally; a WATCH is an overlay advisory and
+  // does NOT turn a sunny ovulation day into a storm. Only a true tornado does.
   const weather = weatherFor(outlook, phase, tornadoLevel)
   let { headline, blurb } = describeWeather(weather, phase)
-  if (tornadoLevel === 'watch') {
-    headline = 'Tornado watch'
-    blurb =
-      'You are in the PMDD-prone stretch before your period, when estrogen and progesterone fall. A hard day is possible but not guaranteed — plan softness in advance, just in case.'
-  } else if (tornadoLevel === 'tornado') {
+  if (tornadoLevel === 'tornado') {
     headline = 'Tornado warning'
+  } else if (tornadoLevel === 'watch') {
+    if (premenWatch) {
+      headline = 'Tornado watch'
+      blurb =
+        'You are in the 3 days before your period, when estrogen and progesterone fall hardest — your PMDD-prone window. A storm is possible but not certain; plan softness in advance, just in case.'
+    } else {
+      blurb =
+        'Estrogen peaks around ovulation, which can also bring a wave of sensitivity, anxiety or irritability for you. The skies look bright — just a gentle heads-up to be kind to yourself today.'
+    }
   }
 
   return {
@@ -252,7 +259,6 @@ export function weatherFor(
   tornadoLevel: DayForecast['tornadoLevel'],
 ): WeatherKind {
   if (tornadoLevel === 'tornado') return 'tornado'
-  if (tornadoLevel === 'watch') return 'storm'
   if (outlook <= 3) return 'storm'
   if (outlook <= 4.5) return 'rain'
   if (phase === 'menstrual' && outlook <= 6.2) return 'drizzle'
