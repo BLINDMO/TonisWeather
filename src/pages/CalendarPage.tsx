@@ -8,29 +8,44 @@ import type { ISODate } from '../types'
 
 const DAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
 
-function moodBg(score: number): string {
-  if (score >= 9) return '#4CC8A4'
-  if (score >= 7) return '#7BD6A8'
-  if (score >= 5) return '#FFBE30'
-  if (score >= 3) return '#FF9B78'
-  return '#FF8FB1'
+/**
+ * 1–10 mood → vivid colour for the large centred number.
+ * No circle badge — the number itself is the visual.
+ */
+function moodColor(score: number): string {
+  if (score >= 9) return '#1EA87A'
+  if (score >= 7) return '#3AB08E'
+  if (score >= 5) return '#C98800'
+  if (score >= 3) return '#E26040'
+  return '#D84070'
 }
 
 export default function CalendarPage({ onOpenDay }: { onOpenDay: (d: ISODate) => void }) {
-  const logs = useStore((s) => s.logs)
+  const logs  = useStore((s) => s.logs)
   const model = useModel()
   const [anchor, setAnchor] = useState(new Date())
   const today = todayISO()
 
-  const days = useMemo(() => monthGrid(anchor), [anchor])
+  const days  = useMemo(() => monthGrid(anchor), [anchor])
   const nRows = Math.ceil(days.length / 7)
 
   if (!model) return null
 
+  /*
+   * Row height is computed from the real viewport so the grid is always
+   * as tall as possible without cells becoming extreme rectangles.
+   *
+   * Formula: (dvh - top_chrome - nav) / nRows, clamped 62–92 px.
+   *   top_chrome ≈ safe-top(~52px) + header(~52px) + weekday-row(24px) = 128px
+   *   nav       ≈ 80px
+   *   total chrome ≈ 208px
+   */
+  const rowH = `clamp(62px, calc((100dvh - 208px) / ${nRows}), 92px)`
+
   return (
-    <div className="flex flex-col" style={{ height: '100dvh' }}>
-      {/* Header */}
-      <div className="safe-top shrink-0 flex items-center justify-between px-5 pb-2 pt-2">
+    <div style={{ minHeight: '100dvh' }}>
+      {/* ── Header ─────────────────────────────────────────────────── */}
+      <div className="safe-top flex items-center justify-between px-5 pb-2 pt-2">
         <h1 className="font-display text-2xl font-semibold text-ink">
           {format(anchor, 'MMMM yyyy')}
         </h1>
@@ -40,140 +55,169 @@ export default function CalendarPage({ onOpenDay }: { onOpenDay: (d: ISODate) =>
         </div>
       </div>
 
-      {/* Weekday labels */}
-      <div className="shrink-0 grid grid-cols-7 px-3 pb-1">
+      {/* ── Weekday labels ─────────────────────────────────────────── */}
+      <div className="grid grid-cols-7 px-2.5 pb-1">
         {DAYS.map((d, i) => (
-          <div key={i} className="text-center text-[11px] font-bold tracking-wider text-ink/35">
+          <div key={i} className="text-center text-[11px] font-bold tracking-widest text-ink/30">
             {d}
           </div>
         ))}
       </div>
 
-      {/* Full-height calendar grid — fills all remaining viewport space */}
+      {/* ── Day grid ───────────────────────────────────────────────── */}
       <div
-        className="flex-1 min-h-0 grid grid-cols-7 gap-1.5 px-3"
+        className="grid grid-cols-7 gap-1.5 px-2.5"
         style={{
-          gridTemplateRows: `repeat(${nRows}, 1fr)`,
-          paddingBottom: 'calc(76px + env(safe-area-inset-bottom, 0px))',
+          gridTemplateRows: `repeat(${nRows}, ${rowH})`,
+          paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px))',
         }}
       >
         {days.map((d) => {
           const iso = toISO(d)
-          const fc = forecastFor(model, iso)
+          const fc  = forecastFor(model, iso)
           const log = logs[iso]
-          const inMonth = isSameMonth(d, anchor)
-          const isToday = iso === today
-          const actualPeriod = !!log?.period
-          const isPast = iso <= today
-          const predictedPeriod = fc.isPredictedPeriod && !isPast && !actualPeriod
-          const tornado = fc.tornadoLevel === 'tornado'
-          const watch = fc.tornadoLevel === 'watch'
-          const hasMood = typeof log?.mood === 'number'
 
-          let bg: string
+          const inMonth       = isSameMonth(d, anchor)
+          const isToday       = iso === today
+          const actualPeriod  = !!log?.period
+          const isPast        = iso <= today
+          const predicted     = fc.isPredictedPeriod && !isPast && !actualPeriod
+          const tornado       = fc.tornadoLevel === 'tornado'
+          const watch         = fc.tornadoLevel === 'watch'
+          const hasMood       = typeof log?.mood === 'number'
+          const isOvulation   = fc.isPredictedOvulation
+
+          /* ── cell background ── */
+          let bg     = ''
           let stripe = false
-          let ring = ''
+          let ring   = ''
 
           if (!inMonth) {
-            bg = 'rgba(255,255,255,0.2)'
-          } else if (tornado) {
-            bg = 'linear-gradient(155deg,#EDE5FC,#D9CEFA)'
-          } else if (actualPeriod) {
-            bg = 'linear-gradient(155deg,#FFE0EC,#FFC4D6)'
-          } else if (predictedPeriod) {
-            stripe = true
             bg = 'transparent'
-          } else if (fc.isPredictedOvulation) {
-            bg = 'linear-gradient(155deg,#FFF3C2,#FFE48A)'
-            ring = 'ring-2 ring-[#FFCF55]'
+          } else if (tornado) {
+            bg = 'linear-gradient(145deg,#EAE0FB 0%,#CFC0F8 100%)'
+          } else if (actualPeriod) {
+            bg = 'linear-gradient(145deg,#FFE2ED 0%,#FFB6CE 100%)'
+          } else if (predicted) {
+            stripe = true
+          } else if (isOvulation) {
+            bg   = 'linear-gradient(145deg,#FFF5C4 0%,#FFE07A 100%)'
+            ring = 'ring-2 ring-[#FFCF55] ring-inset'
           } else if (watch) {
-            bg = 'linear-gradient(155deg,#F5F0FD,#ECE4F8)'
+            bg = 'linear-gradient(145deg,#F2EEFE 0%,#E4D9FC 100%)'
           } else {
-            bg = 'rgba(255,255,255,0.75)'
+            bg = 'rgba(255,255,255,0.80)'
           }
 
           return (
             <button
               key={iso}
               onClick={() => inMonth && onOpenDay(iso)}
-              className={`relative flex flex-col items-center rounded-[14px] shadow-sm transition active:scale-90 ${
-                inMonth ? '' : 'pointer-events-none opacity-25'
-              } ${ring} ${stripe ? 'period-stripe' : ''}`}
-              style={{ background: stripe ? undefined : bg, padding: '7px 4px 6px' }}
+              className={`
+                relative overflow-hidden rounded-2xl transition
+                active:scale-[0.88]
+                ${inMonth
+                  ? 'shadow-[0_1px_6px_rgba(80,60,180,0.10)]'
+                  : 'pointer-events-none opacity-15'}
+                ${ring}
+                ${stripe ? 'period-stripe' : ''}
+              `}
+              style={{ background: stripe ? undefined : bg }}
             >
-              {/* Date number */}
+              {/* Date — top-left corner, never mistaken for the score */}
               <span
-                className={`text-[13px] font-bold leading-none ${
-                  tornado ? 'text-[#5b4f86]' : 'text-ink/70'
-                } ${
+                className={`absolute left-2 top-1.5 z-10 leading-none ${
                   isToday
-                    ? 'flex h-[22px] w-[22px] items-center justify-center rounded-full bg-dusk text-[11px] font-bold text-white shadow-sm'
-                    : ''
+                    ? 'flex h-[20px] w-[20px] items-center justify-center rounded-full bg-dusk text-[9px] font-bold text-white'
+                    : `text-[11px] font-bold ${tornado ? 'text-[#5b4f86]' : 'text-ink/45'}`
                 }`}
               >
                 {format(d, 'd')}
               </span>
 
-              {/* Flex spacer so mood badge sits in the vertical middle */}
-              <div className="flex-1" />
-
-              {/* Mood score badge — the headline element */}
+              {/*
+                Mood score — the main visual.
+                A bare coloured number centred in the cell.  No bubble, no ring.
+                The colour gradient green→amber→rose maps high→mid→low.
+              */}
               {hasMood && (
-                <div
-                  className="flex h-[30px] w-[30px] items-center justify-center rounded-full text-[12px] font-bold text-white shadow-md"
-                  style={{ background: moodBg(log!.mood!) }}
+                <span
+                  className="absolute inset-0 flex items-center justify-center font-bold leading-none"
+                  style={{ fontSize: 28, color: moodColor(log!.mood!) }}
                 >
                   {log!.mood}
-                </div>
+                </span>
               )}
 
-              {/* Bottom indicators */}
-              {(actualPeriod || tornado || watch) && (
-                <div className="mt-[5px] flex items-center gap-0.5">
-                  {actualPeriod && <Drop />}
-                  {(tornado || watch) && <MiniTornado strong={tornado} />}
-                </div>
-              )}
+              {/* Indicator dots — bottom-right, 4–5 px circles */}
+              <div className="absolute bottom-1.5 right-1.5 flex items-center gap-[3px]">
+                {actualPeriod && (
+                  <span className="block h-[5px] w-[5px] rounded-full bg-[#F04880]" />
+                )}
+                {tornado && (
+                  <span className="block h-[5px] w-[5px] rounded-full bg-[#7460B8]" />
+                )}
+                {watch && !tornado && (
+                  <span className="block h-[4px] w-[4px] rounded-full bg-[#A890D0]" />
+                )}
+              </div>
             </button>
           )
         })}
+      </div>
+
+      {/* ── Compact legend ─────────────────────────────────────────── */}
+      <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 px-4 pt-3 pb-2">
+        <Chip gradient="linear-gradient(90deg,#FFE2ED,#FFB6CE)" label="Period" dot="#F04880" />
+        <Chip stripe label="Predicted" />
+        <Chip gradient="linear-gradient(90deg,#FFF5C4,#FFE07A)" ring label="Ovulation" />
+        <Chip gradient="linear-gradient(90deg,#EAE0FB,#CFC0F8)" label="Tornado" dot="#7460B8" />
+        <Chip gradient="linear-gradient(90deg,#F2EEFE,#E4D9FC)" label="Watch" dot="#A890D0" />
       </div>
     </div>
   )
 }
 
+/* ── Sub-components ─────────────────────────────────────────────────────── */
+
 function NavBtn({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-xl font-bold text-ink/55 shadow-card active:scale-90"
+      className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-xl font-bold text-ink/50 shadow-card active:scale-90"
     >
       {children}
     </button>
   )
 }
 
-function Drop() {
+function Chip({
+  gradient,
+  stripe,
+  ring,
+  label,
+  dot,
+}: {
+  gradient?: string
+  stripe?: boolean
+  ring?: boolean
+  label: string
+  dot?: string
+}) {
   return (
-    <svg width="9" height="9" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M12 3c3.5 4.4 6.5 8 6.5 11.5A6.5 6.5 0 1 1 5.5 14.5C5.5 11 8.5 7.4 12 3z"
-        fill="#FF5D8F"
-      />
-    </svg>
-  )
-}
-
-function MiniTornado({ strong = false }: { strong?: boolean }) {
-  const c = strong ? '#7E72B0' : '#A99BCF'
-  return (
-    <svg width="10" height="10" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M4 5h16M6 9h12M8 13h8M10 17h4M11 21h2"
-        stroke={c}
-        strokeWidth="2.4"
-        strokeLinecap="round"
-      />
-    </svg>
+    <div className="flex items-center gap-1.5">
+      <span
+        className={`relative h-4 w-4 shrink-0 rounded-[5px] ${ring ? 'ring-2 ring-[#FFCF55]' : ''} ${stripe ? 'period-stripe' : ''}`}
+        style={stripe ? undefined : { background: gradient }}
+      >
+        {dot && (
+          <span
+            className="absolute bottom-[2px] right-[2px] h-[4px] w-[4px] rounded-full"
+            style={{ background: dot }}
+          />
+        )}
+      </span>
+      <span className="text-[10px] font-semibold text-ink/45">{label}</span>
+    </div>
   )
 }

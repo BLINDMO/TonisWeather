@@ -3,8 +3,8 @@ import { motion } from 'framer-motion'
 import type { WeatherKind } from '../types'
 
 /**
- * Premium, hand-built weather glyphs — used everywhere in place of system emoji.
- * Soft gradients, layered depth, gentle motion. Renders crisp at any size.
+ * Premium weather glyphs — rich gradients, layered depth, gentle motion.
+ * Renders crisp at any size. Large sizes (≥100px) get canvas-composite glow.
  */
 export default function WeatherGlyph({
   kind,
@@ -30,41 +30,66 @@ export default function WeatherGlyph({
       style={{ overflow: 'visible' }}
     >
       <defs>
-        <linearGradient id={id('sun')} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#FFE060" />
-          <stop offset="50%" stopColor="#FFB820" />
-          <stop offset="100%" stopColor="#FF9400" />
-        </linearGradient>
-        <radialGradient id={id('sunGlow')} cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#FFD84A" stopOpacity="0.95" />
-          <stop offset="100%" stopColor="#FFD84A" stopOpacity="0" />
+        {/* Sun gradients */}
+        <radialGradient id={id('sunCore')} cx="38%" cy="36%" r="56%">
+          <stop offset="0%" stopColor="#FFFCE0" />
+          <stop offset="35%" stopColor="#FFE840" />
+          <stop offset="70%" stopColor="#FFBC18" />
+          <stop offset="100%" stopColor="#FF8C00" />
         </radialGradient>
-        <linearGradient id={id('cloud')} x1="0" y1="0" x2="0" y2="1">
+        <radialGradient id={id('sunGlow')} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#FFE060" stopOpacity="0.90" />
+          <stop offset="50%" stopColor="#FFAD00" stopOpacity="0.38" />
+          <stop offset="100%" stopColor="#FF7A00" stopOpacity="0" />
+        </radialGradient>
+        <radialGradient id={id('sunHalo')} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#FFF0A0" stopOpacity="0.55" />
+          <stop offset="100%" stopColor="#FFD060" stopOpacity="0" />
+        </radialGradient>
+        {/* Cloud gradients */}
+        <linearGradient id={id('cloudLit')} x1="20%" y1="0%" x2="80%" y2="100%">
           <stop offset="0%" stopColor="#FFFFFF" />
-          <stop offset="100%" stopColor="#EAF0FB" />
+          <stop offset="55%" stopColor="#F0F4FF" />
+          <stop offset="100%" stopColor="#DDE4F8" />
         </linearGradient>
-        <linearGradient id={id('cloudDark')} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#C9CFE6" />
-          <stop offset="100%" stopColor="#AEB6D6" />
+        <linearGradient id={id('cloudDark')} x1="20%" y1="0%" x2="80%" y2="100%">
+          <stop offset="0%" stopColor="#CBD5EE" />
+          <stop offset="50%" stopColor="#B0BCDA" />
+          <stop offset="100%" stopColor="#99A8C8" />
         </linearGradient>
-        <linearGradient id={id('storm')} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#8E86B4" />
+        <linearGradient id={id('cloudStorm')} x1="20%" y1="0%" x2="80%" y2="100%">
+          <stop offset="0%" stopColor="#9C96C4" />
           <stop offset="100%" stopColor="#6B6395" />
         </linearGradient>
-        <linearGradient id={id('rain')} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#9CC4FF" />
-          <stop offset="100%" stopColor="#6FA0F0" />
+        {/* Rain drop gradient */}
+        <linearGradient id={id('rain')} x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#A8C8FF" />
+          <stop offset="100%" stopColor="#5A8CE8" />
         </linearGradient>
-        <linearGradient id={id('bolt')} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#FFE07A" />
-          <stop offset="100%" stopColor="#FFB020" />
+        {/* Lightning bolt */}
+        <linearGradient id={id('bolt')} x1="0%" y1="0%" x2="30%" y2="100%">
+          <stop offset="0%" stopColor="#FFF080" />
+          <stop offset="40%" stopColor="#FFD820" />
+          <stop offset="100%" stopColor="#FFA010" />
         </linearGradient>
-        <linearGradient id={id('funnel')} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#B6A9E6" />
-          <stop offset="100%" stopColor="#7E72B0" />
+        {/* Tornado funnel */}
+        <linearGradient id={id('funnel')} x1="10%" y1="0%" x2="90%" y2="100%">
+          <stop offset="0%" stopColor="#C8BAEA" />
+          <stop offset="50%" stopColor="#9A8ED4" />
+          <stop offset="100%" stopColor="#6E60B0" />
         </linearGradient>
-        <filter id={id('soft')} x="-40%" y="-40%" width="180%" height="180%">
-          <feDropShadow dx="0" dy="3" stdDeviation="3" floodColor="#5B6CA8" floodOpacity="0.22" />
+        {/* Drop shadow filter */}
+        <filter id={id('shadow')} x="-40%" y="-30%" width="180%" height="180%">
+          <feDropShadow dx="0" dy="4" stdDeviation="4" floodColor="#3E4E8A" floodOpacity="0.28" />
+        </filter>
+        <filter id={id('glow')} x="-50%" y="-50%" width="200%" height="200%">
+          <feDropShadow dx="0" dy="0" stdDeviation="6" floodColor="#FFD060" floodOpacity="0.70" />
+        </filter>
+        <filter id={id('boltGlow')} x="-60%" y="-40%" width="220%" height="180%">
+          <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor="#FFE060" floodOpacity="0.90" />
+        </filter>
+        <filter id={id('rainGlow')} x="-40%" y="-20%" width="180%" height="160%">
+          <feDropShadow dx="0" dy="0" stdDeviation="3" floodColor="#80AAFF" floodOpacity="0.60" />
         </filter>
       </defs>
 
@@ -82,44 +107,56 @@ export default function WeatherGlyph({
 
 type IdFn = (s: string) => string
 
+function SunRays({ cx, cy, r1, r2, count = 12, animate }: {
+  cx: number; cy: number; r1: number; r2: number; count?: number; animate: boolean
+}) {
+  return (
+    <motion.g
+      animate={animate ? { rotate: 360 } : {}}
+      transition={{ duration: 72, repeat: Infinity, ease: 'linear' }}
+      style={{ transformOrigin: `${cx}px ${cy}px` }}
+    >
+      {Array.from({ length: count }).map((_, i) => {
+        const a = (i / count) * Math.PI * 2
+        const isLong = i % 3 === 0
+        return (
+          <line
+            key={i}
+            x1={cx + Math.cos(a) * r1}
+            y1={cy + Math.sin(a) * r1}
+            x2={cx + Math.cos(a) * (isLong ? r2 * 1.18 : r2)}
+            y2={cy + Math.sin(a) * (isLong ? r2 * 1.18 : r2)}
+            stroke={isLong ? '#FFD040' : '#FFBE20'}
+            strokeWidth={isLong ? 3.2 : 2.4}
+            strokeLinecap="round"
+            opacity={isLong ? 0.95 : 0.70}
+          />
+        )
+      })}
+    </motion.g>
+  )
+}
+
 function Sun({ id, animate, big }: { id: IdFn; animate: boolean; big?: boolean }) {
   return (
     <g>
-      <circle cx="50" cy="50" r="42" fill={`url(#${id('sunGlow')})`} />
-      <motion.g
-        animate={animate ? { rotate: 360 } : {}}
-        transition={{ duration: 60, repeat: Infinity, ease: 'linear' }}
-        style={{ transformOrigin: '50px 50px' }}
-      >
-        {Array.from({ length: 12 }).map((_, i) => {
-          const a = (i / 12) * Math.PI * 2
-          const r1 = big ? 27 : 28
-          const r2 = big ? 38 : 36
-          return (
-            <line
-              key={i}
-              x1={50 + Math.cos(a) * r1}
-              y1={50 + Math.sin(a) * r1}
-              x2={50 + Math.cos(a) * r2}
-              y2={50 + Math.sin(a) * r2}
-              stroke="#FFB820"
-              strokeWidth="3.4"
-              strokeLinecap="round"
-            />
-          )
-        })}
-      </motion.g>
+      {/* outer halo — wide glow ring */}
+      <circle cx="50" cy="50" r="48" fill={`url(#${id('sunHalo')})`} />
+      {/* mid glow */}
+      <circle cx="50" cy="50" r="38" fill={`url(#${id('sunGlow')})`} />
+      {/* rays */}
+      <SunRays cx={50} cy={50} r1={big ? 26 : 27} r2={big ? 38 : 36} count={12} animate={animate} />
+      {/* disc */}
       <motion.circle
-        cx="50"
-        cy="50"
-        r="20"
-        fill={`url(#${id('sun')})`}
-        filter={`url(#${id('soft')})`}
-        animate={animate ? { scale: [1, 1.04, 1] } : {}}
-        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-        style={{ transformOrigin: '50px 50px' }}
+        cx="50" cy="50" r="21"
+        fill={`url(#${id('sunCore')})`}
+        filter={`url(#${id('glow')})`}
+        animate={animate ? { r: [21, 21.7, 21] } : {}}
+        transition={{ duration: 4.2, repeat: Infinity, ease: 'easeInOut' }}
       />
-      <ellipse cx="44" cy="43" rx="7" ry="5" fill="#FFF3C9" opacity="0.7" />
+      {/* lens glare */}
+      <ellipse cx="43" cy="42" rx="7.5" ry="4.5" fill="rgba(255,255,255,0.62)" transform="rotate(-30 43 42)" />
+      <circle cx="46.5" cy="40.5" r="2.5" fill="rgba(255,255,255,0.50)" />
     </g>
   )
 }
@@ -128,29 +165,11 @@ function PartlySun({ id, animate }: { id: IdFn; animate: boolean }) {
   return (
     <g>
       <g transform="translate(8 -6)">
-        <circle cx="40" cy="34" r="30" fill={`url(#${id('sunGlow')})`} />
-        <motion.g
-          animate={animate ? { rotate: 360 } : {}}
-          transition={{ duration: 60, repeat: Infinity, ease: 'linear' }}
-          style={{ transformOrigin: '40px 34px' }}
-        >
-          {Array.from({ length: 10 }).map((_, i) => {
-            const a = (i / 10) * Math.PI * 2
-            return (
-              <line
-                key={i}
-                x1={40 + Math.cos(a) * 17}
-                y1={34 + Math.sin(a) * 17}
-                x2={40 + Math.cos(a) * 24}
-                y2={34 + Math.sin(a) * 24}
-                stroke="#FFB820"
-                strokeWidth="3"
-                strokeLinecap="round"
-              />
-            )
-          })}
-        </motion.g>
-        <circle cx="40" cy="34" r="13" fill={`url(#${id('sun')})`} />
+        <circle cx="40" cy="34" r="28" fill={`url(#${id('sunHalo')})`} />
+        <circle cx="40" cy="34" r="22" fill={`url(#${id('sunGlow')})`} />
+        <SunRays cx={40} cy={34} r1={17} r2={25} count={10} animate={animate} />
+        <circle cx="40" cy="34" r="13.5" fill={`url(#${id('sunCore')})`} filter={`url(#${id('glow')})`} />
+        <ellipse cx="35" cy="29" rx="5" ry="3" fill="rgba(255,255,255,0.58)" transform="rotate(-28 35 29)" />
       </g>
       <CloudShape id={id} x={32} y={52} scale={1} animate={animate} />
     </g>
@@ -160,61 +179,66 @@ function PartlySun({ id, animate }: { id: IdFn; animate: boolean }) {
 function Clouds({ id, animate }: { id: IdFn; animate: boolean }) {
   return (
     <g>
-      <CloudShape id={id} x={30} y={36} scale={0.78} dark animate={animate} delay={0.6} />
-      <CloudShape id={id} x={50} y={56} scale={1.02} animate={animate} />
+      <CloudShape id={id} x={28} y={34} scale={0.80} dark animate={animate} delay={0.7} />
+      <CloudShape id={id} x={52} y={56} scale={1.04} animate={animate} />
     </g>
   )
 }
 
 function CloudShape({
-  id,
-  x,
-  y,
-  scale = 1,
-  dark = false,
-  animate = true,
-  delay = 0,
+  id, x, y, scale = 1, dark = false, storm = false, animate = true, delay = 0,
 }: {
-  id: IdFn
-  x: number
-  y: number
-  scale?: number
-  dark?: boolean
-  animate?: boolean
-  delay?: number
+  id: IdFn; x: number; y: number; scale?: number; dark?: boolean; storm?: boolean
+  animate?: boolean; delay?: number
 }) {
+  const fill = storm
+    ? `url(#${id('cloudStorm')})`
+    : dark
+    ? `url(#${id('cloudDark')})`
+    : `url(#${id('cloudLit')})`
+
   return (
     <motion.g
-      animate={animate ? { x: [0, 3, 0] } : {}}
-      transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut', delay }}
+      animate={animate ? { x: [0, 3.5, 0] } : {}}
+      transition={{ duration: 7.5, repeat: Infinity, ease: 'easeInOut', delay }}
     >
-      <g transform={`translate(${x} ${y}) scale(${scale})`} filter={`url(#${id('soft')})`}>
-        <ellipse cx="0" cy="6" rx="22" ry="14" fill={`url(#${id(dark ? 'cloudDark' : 'cloud')})`} />
-        <circle cx="13" cy="0" r="13" fill={`url(#${id(dark ? 'cloudDark' : 'cloud')})`} />
-        <circle cx="-12" cy="2" r="11" fill={`url(#${id(dark ? 'cloudDark' : 'cloud')})`} />
-        <rect x="-22" y="6" width="44" height="14" rx="7" fill={`url(#${id(dark ? 'cloudDark' : 'cloud')})`} />
+      <g transform={`translate(${x} ${y}) scale(${scale})`} filter={`url(#${id('shadow')})`}>
+        {/* base puff row */}
+        <ellipse cx="0" cy="8" rx="23" ry="15" fill={fill} />
+        {/* top puffs — bigger & more defined */}
+        <circle cx="14" cy="-1" r="14.5" fill={fill} />
+        <circle cx="-13" cy="2" r="12" fill={fill} />
+        <circle cx="1"  cy="-5" r="10" fill={fill} />
+        {/* bottom bar */}
+        <rect x="-22" y="8" width="44" height="14" rx="7" fill={fill} />
+        {/* highlight streak on lit clouds */}
+        {!dark && !storm && (
+          <ellipse cx="-4" cy="-3" rx="10" ry="5" fill="rgba(255,255,255,0.52)" transform="rotate(-20 -4 -3)" />
+        )}
       </g>
     </motion.g>
   )
 }
 
 function Drops({ heavy, color }: { heavy?: boolean; color: string }) {
-  const xs = heavy ? [30, 42, 54, 66, 38, 58] : [38, 50, 62]
+  const xs = heavy ? [28, 40, 52, 64, 35, 55] : [36, 50, 64]
   return (
     <g>
       {xs.map((x, i) => (
         <motion.line
           key={i}
-          x1={x}
-          y1={72}
-          x2={x - 2}
-          y2={80}
+          x1={x} y1={72} x2={x - 2.5} y2={81}
           stroke={color}
-          strokeWidth="3.2"
+          strokeWidth="3.4"
           strokeLinecap="round"
-          initial={{ opacity: 0, y: -4 }}
-          animate={{ opacity: [0, 1, 0], y: [0, 14] }}
-          transition={{ duration: heavy ? 0.8 : 1, repeat: Infinity, delay: (i % 3) * 0.22, ease: 'easeIn' }}
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: [0, 0.9, 0], y: [0, 16] }}
+          transition={{
+            duration: heavy ? 0.75 : 1.0,
+            repeat: Infinity,
+            delay: (i % 3) * 0.24,
+            ease: 'easeIn',
+          }}
         />
       ))}
     </g>
@@ -223,8 +247,8 @@ function Drops({ heavy, color }: { heavy?: boolean; color: string }) {
 
 function RainCloud({ id, animate, heavy }: { id: IdFn; animate: boolean; heavy?: boolean }) {
   return (
-    <g>
-      <CloudShape id={id} x={50} y={44} scale={1.05} dark animate={animate} />
+    <g filter={`url(#${id('rainGlow')})`}>
+      <CloudShape id={id} x={50} y={44} scale={1.06} dark animate={animate} />
       <Drops heavy={heavy} color={`url(#${id('rain')})`} />
     </g>
   )
@@ -233,14 +257,28 @@ function RainCloud({ id, animate, heavy }: { id: IdFn; animate: boolean; heavy?:
 function Storm({ id, animate }: { id: IdFn; animate: boolean }) {
   return (
     <g>
-      <CloudShape id={id} x={50} y={40} scale={1.08} dark animate={animate} />
+      <CloudShape id={id} x={50} y={40} scale={1.10} storm animate={animate} />
       <motion.path
-        d="M52 56 L44 70 L51 70 L43 84 L60 66 L52 66 Z"
+        d="M52 56 L43 71 L51 71 L42 86 L62 66 L52 66 Z"
         fill={`url(#${id('bolt')})`}
-        animate={animate ? { opacity: [1, 1, 0.3, 1, 0.5, 1], filter: ['drop-shadow(0 0 0px #FFD166)', 'drop-shadow(0 0 6px #FFD166)', 'drop-shadow(0 0 0px #FFD166)'] } : {}}
-        transition={{ duration: 2.4, repeat: Infinity, times: [0, 0.1, 0.16, 0.2, 0.28, 0.5] }}
+        filter={`url(#${id('boltGlow')})`}
+        animate={animate
+          ? {
+              opacity: [1, 1, 0.2, 1, 0.55, 1],
+              filter: [
+                `drop-shadow(0 0 0px #FFE060)`,
+                `drop-shadow(0 0 10px #FFE060)`,
+                `drop-shadow(0 0 0px #FFE060)`,
+              ],
+            }
+          : {}}
+        transition={{
+          duration: 2.8,
+          repeat: Infinity,
+          times: [0, 0.08, 0.14, 0.20, 0.30, 0.55],
+        }}
       />
-      <Drops color="#B9A9F0" />
+      <Drops color={`url(#${id('rain')})`} />
     </g>
   )
 }
@@ -248,31 +286,31 @@ function Storm({ id, animate }: { id: IdFn; animate: boolean }) {
 function Tornado({ id, animate }: { id: IdFn; animate: boolean }) {
   return (
     <g>
-      <CloudShape id={id} x={50} y={30} scale={1.05} dark animate={animate} />
+      <CloudShape id={id} x={50} y={30} scale={1.06} storm animate={animate} />
       <motion.g
-        animate={animate ? { rotate: [-3, 3, -3] } : {}}
-        transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
-        style={{ transformOrigin: '50px 60px' }}
+        animate={animate ? { rotate: [-4, 4, -4] } : {}}
+        transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
+        style={{ transformOrigin: '50px 62px' }}
       >
         <path
-          d="M30 40 Q50 34 70 40 Q58 48 64 56 Q50 52 56 62 Q46 60 50 70 Q44 72 46 79 Q43 84 41 88 Q39 82 43 76 Q35 74 44 66 Q33 64 42 54 Q31 52 40 46 Q30 44 30 40 Z"
+          d="M28 40 Q50 33 72 40 Q58 49 66 58 Q50 53 58 64 Q46 61 50 72 Q43 74 46 82 Q42 87 40 91 Q38 84 43 77 Q34 75 44 67 Q32 65 43 55 Q30 53 41 47 Q29 45 28 40 Z"
           fill={`url(#${id('funnel')})`}
-          filter={`url(#${id('soft')})`}
+          filter={`url(#${id('shadow')})`}
         />
-        <path d="M34 42 Q50 37 66 42" stroke="#E4DBFB" strokeWidth="2.4" fill="none" opacity="0.7" />
-        <path d="M40 52 Q50 49 60 52" stroke="#E4DBFB" strokeWidth="2.1" fill="none" opacity="0.6" />
-        <path d="M44 62 Q50 60 56 62" stroke="#E4DBFB" strokeWidth="1.8" fill="none" opacity="0.6" />
+        <path d="M32 42 Q50 36 68 42" stroke="#E8DCFF" strokeWidth="2.6" fill="none" opacity="0.75" />
+        <path d="M39 53 Q50 50 61 53" stroke="#E0D4FF" strokeWidth="2.2" fill="none" opacity="0.65" />
+        <path d="M44 64 Q50 62 56 64" stroke="#D8CCFF" strokeWidth="2.0" fill="none" opacity="0.60" />
       </motion.g>
       {animate &&
-        Array.from({ length: 5 }).map((_, i) => (
+        Array.from({ length: 6 }).map((_, i) => (
           <motion.circle
             key={i}
-            cx={32 + i * 9}
+            cx={30 + i * 8}
             cy={36}
-            r={1.6}
+            r={1.8}
             fill="#CDBFF6"
-            animate={{ x: [-6, 6, -6], y: [0, -4, 0], opacity: [0.3, 0.9, 0.3] }}
-            transition={{ duration: 1.8, repeat: Infinity, delay: i * 0.18 }}
+            animate={{ x: [-7, 7, -7], y: [0, -5, 0], opacity: [0.25, 0.95, 0.25] }}
+            transition={{ duration: 1.9, repeat: Infinity, delay: i * 0.17 }}
           />
         ))}
     </g>
