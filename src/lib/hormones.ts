@@ -148,21 +148,33 @@ export function explainHormones(
       title = 'A reset is underway'
       tone = 'mixed'
       lines.push(
-        'Estrogen and progesterone are both at their lowest. The storm of the last few days has broken — many people feel a quiet relief once bleeding begins.',
+        'Estrogen and progesterone have reached their lowest point — the steep pre-period withdrawal has levelled off. For many people this levelling is actually what brings relief; the rate of hormone change, which drove the disruption, has slowed.',
       )
       lines.push(
-        'Energy may be low and you might want rest. That is biology, not weakness. Iron-rich food and warmth help here.',
+        'Energy is often low and rest is genuinely useful right now. Prostaglandins driving cramping and inflammation also peak in the first 1–2 days, then ease. Iron-rich food and warmth support recovery.',
       )
       break
     case 'follicular':
-      title = 'The clouds are clearing'
-      tone = 'good'
-      lines.push(
-        'Estrogen is climbing as a new follicle grows. This is the brain-fog-lifting, optimistic part of the month.',
-      )
-      lines.push(
-        'Serotonin tends to rise with estrogen, so motivation, focus and social energy usually return now. A good window for harder tasks.',
-      )
+      if (h.estrogen < 0.22) {
+        // Early follicular — still in the recalibration window just after the period
+        title = 'Levelling out after the reset'
+        tone = 'mixed'
+        lines.push(
+          'Estrogen is rising from its cycle low, but the serotonin-stabilising effect it has on the brain takes roughly 24–48 hours to follow the hormonal signal. The hormones are evening out — and that recalibration itself can cause some variability in mood and energy.',
+        )
+        lines.push(
+          'This is not a new storm — it is the nervous system catching up. The upswing is underway; most people feel the shift clearly within a day or two.',
+        )
+      } else {
+        title = 'The clouds are clearing'
+        tone = 'good'
+        lines.push(
+          'Estrogen is climbing as a new follicle grows. This is the brain-fog-lifting, optimistic part of the month.',
+        )
+        lines.push(
+          'Serotonin tends to rise with estrogen, so motivation, focus and social energy usually return now. A good window for harder tasks.',
+        )
+      }
       break
     case 'fertile':
       title = 'Skies opening up'
@@ -189,13 +201,13 @@ export function explainHormones(
       )
       break
     case 'late-luteal':
-      title = 'Storm watch'
+      title = 'Hormones in steep descent'
       tone = 'tough'
       lines.push(
-        'Both estrogen and progesterone are falling steeply now. For a PMDD brain this withdrawal is the core trigger — it disrupts serotonin and GABA, the calm-and-steady chemicals.',
+        'Both progesterone and estrogen are withdrawing sharply. Research shows it is the rate of change in these levels — not just the low level itself — that the GABA and serotonin systems react to. The steeper the drop, the stronger the signal disruption.',
       )
       lines.push(
-        'Irritability, tearfulness, anxiety or feeling "out of control" here are a hormone-withdrawal reaction, not your true baseline. It will lift when bleeding starts.',
+        'Irritability, tearfulness, anxiety or a sense of emotional amplification here are a physiological withdrawal response, not your true baseline. It lifts once the descent levels out at the start of bleeding.',
       )
       break
   }

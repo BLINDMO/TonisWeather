@@ -219,6 +219,19 @@ export function forecastFor(model: CycleModel, date: ISODate): DayForecast {
 
   // Weather reflects her hormones naturally; a WATCH is an overlay advisory and
   // does NOT turn a sunny ovulation day into a storm. Only a true tornado does.
+  // ── Transitional recalibration windows ────────────────────────────────────
+  // Two windows bracket every period where hormone signal variance is highest
+  // and the nervous system's response tends to lag behind the hormone level:
+  //
+  // 1. Pre-period (last 3 days, already caught by premenWatch): progesterone
+  //    and estrogen withdraw sharply, disrupting the GABA / serotonin axis.
+  //
+  // 2. Post-period (first 2 days of follicular): estrogen is rising from nadir
+  //    but the serotonin transporter upregulation that estrogen drives takes
+  //    roughly 24–48 h to follow. The result is that even after bleeding stops
+  //    mood and energy can still fluctuate before they consistently improve.
+  const postPeriodWindow = phase === 'follicular' && cycleDay <= geo.periodLength + 2
+
   const weather = weatherFor(outlook, phase, tornadoLevel)
   let { headline, blurb } = describeWeather(weather, phase)
   if (tornadoLevel === 'tornado') {
@@ -227,11 +240,15 @@ export function forecastFor(model: CycleModel, date: ISODate): DayForecast {
     if (premenWatch) {
       headline = 'Tornado watch'
       blurb =
-        'You are in the 3 days before your period, when estrogen and progesterone fall hardest — your PMDD-prone window. A storm is possible but not certain; plan softness in advance, just in case.'
+        'Estrogen and progesterone are descending toward their lowest point of the cycle — the steepest part of the drop. How sharply this affects mood varies day to day; it is the rate of change in the hormonal signal, not just the level, that the nervous system responds to.'
     } else {
       blurb =
         'Estrogen peaks around ovulation, which can also bring a wave of sensitivity, anxiety or irritability for you. The skies look bright — just a gentle heads-up to be kind to yourself today.'
     }
+  } else if (postPeriodWindow) {
+    // Gentle recalibration note — not alarming, just scientifically honest
+    blurb =
+      'Estrogen is climbing back from its lowest point, but the mood-stabilising effects on serotonin signalling typically lag the hormonal signal by 24–48 hours. Today may feel steadier, or still a little variable — both are part of normal recalibration.'
   }
 
   return {
