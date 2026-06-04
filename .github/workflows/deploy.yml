@@ -1,9 +1,10 @@
 name: Deploy Toni's Weather to GitHub Pages
 
+# NOTE: This repo's environment has no hosted Actions runners, so we publish to
+# the `gh-pages` branch directly instead. This workflow is kept for any future
+# environment that DOES have runners — run it manually from the Actions tab, and
+# set Pages source to "GitHub Actions".
 on:
-  push:
-    branches:
-      - claude/tonis-weather-tracker-KnXKI
   workflow_dispatch:
 
 # Allow the workflow to enable Pages and publish the built site.
