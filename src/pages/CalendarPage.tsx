@@ -5,10 +5,18 @@ import { useStore } from '../store'
 import { useModel } from '../lib/useModel'
 import { forecastFor, nextPeriodStart } from '../lib/cycle'
 import { monthGrid, toISO, todayISO, shortDate, addDaysISO } from '../lib/date'
-import { moodFace } from '../components/MoodSlider'
 import type { ISODate } from '../types'
 
 const WEEKDAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+
+/** Maps a 1–10 mood score to a vibrant background colour. */
+function moodBg(score: number): string {
+  if (score >= 9) return '#4CC8A4'
+  if (score >= 7) return '#7BD6A8'
+  if (score >= 5) return '#FFBE30'
+  if (score >= 3) return '#FF9B78'
+  return '#FF8FB1'
+}
 
 export default function CalendarPage({ onOpenDay }: { onOpenDay: (d: ISODate) => void }) {
   const logs = useStore((s) => s.logs)
@@ -24,8 +32,6 @@ export default function CalendarPage({ onOpenDay }: { onOpenDay: (d: ISODate) =>
     const from = isSameMonth(new Date(today), anchor) ? today : firstISO
     const ps = nextPeriodStart(model, from)
     const end = addDaysISO(ps, Math.max(0, model.geo.periodLength - 1))
-    // Ovulation date for the cycle ending at `ps` — matches the calendar's
-    // cycle-day == ovulationDay gold marker exactly (keeps the panel consistent).
     const ov = addDaysISO(ps, model.geo.ovulationDay - 1 - model.geo.cycleLength)
     let watch = 0
     for (const d of days) {
@@ -39,24 +45,31 @@ export default function CalendarPage({ onOpenDay }: { onOpenDay: (d: ISODate) =>
 
   return (
     <div className="mx-auto max-w-md px-4 pb-28">
+      {/* Header */}
       <div className="safe-top flex items-center justify-between px-1 pb-3 pt-3">
         <h1 className="font-display text-2xl font-semibold text-ink">Calendar</h1>
         <div className="flex items-center gap-1">
           <NavBtn onClick={() => setAnchor((a) => addMonths(a, -1))}>‹</NavBtn>
-          <span className="w-32 text-center text-sm font-bold text-ink">{format(anchor, 'MMMM yyyy')}</span>
+          <span className="w-32 text-center text-sm font-bold text-ink">
+            {format(anchor, 'MMMM yyyy')}
+          </span>
           <NavBtn onClick={() => setAnchor((a) => addMonths(a, 1))}>›</NavBtn>
         </div>
       </div>
 
-      <div className="rounded-[2rem] border border-white/70 bg-white/85 p-3.5 shadow-card backdrop-blur">
-        <div className="mb-1.5 grid grid-cols-7">
+      {/* Calendar grid */}
+      <div className="rounded-[2rem] border border-white/70 bg-white/85 p-3 shadow-card backdrop-blur">
+        {/* Weekday labels */}
+        <div className="mb-1 grid grid-cols-7">
           {WEEKDAYS.map((d, i) => (
             <div key={i} className="py-1 text-center text-[11px] font-bold text-ink/30">
               {d}
             </div>
           ))}
         </div>
-        <div className="grid grid-cols-7 gap-1.5">
+
+        {/* Day cells */}
+        <div className="grid grid-cols-7 gap-1">
           {days.map((d) => {
             const iso = toISO(d)
             const fc = forecastFor(model, iso)
@@ -66,13 +79,13 @@ export default function CalendarPage({ onOpenDay }: { onOpenDay: (d: ISODate) =>
             const actualPeriod = !!log?.period
             const isPast = iso <= today
             const predictedPeriod = fc.isPredictedPeriod && !isPast && !actualPeriod
+            const tornado = fc.tornadoLevel === 'tornado'
+            const watch = fc.tornadoLevel === 'watch'
+            const hasMood = typeof log?.mood === 'number'
 
-            // premium, light fills
             let bg: string | undefined
             let stripe = false
             let ring = ''
-            const tornado = fc.tornadoLevel === 'tornado'
-            const watch = fc.tornadoLevel === 'watch'
             if (tornado) bg = 'linear-gradient(160deg,#E7DEFB,#D7C9F4)'
             else if (actualPeriod) bg = 'linear-gradient(160deg,#FFDCE6,#FFC4D5)'
             else if (predictedPeriod) stripe = true
@@ -85,30 +98,49 @@ export default function CalendarPage({ onOpenDay }: { onOpenDay: (d: ISODate) =>
               <button
                 key={iso}
                 onClick={() => onOpenDay(iso)}
-                className={`relative flex aspect-[1/1.12] flex-col items-center justify-center rounded-[1.05rem] transition active:scale-90 ${
-                  inMonth ? '' : 'opacity-30'
+                className={`relative flex flex-col items-center rounded-[1.1rem] pb-1.5 pt-2 transition active:scale-90 ${
+                  inMonth ? '' : 'opacity-25'
                 } ${ring} ${stripe ? 'period-stripe' : ''}`}
-                style={{ background: stripe ? undefined : bg }}
+                style={{ background: stripe ? undefined : bg, minHeight: 58 }}
               >
+                {/* Date number */}
                 <span
-                  className={`text-[15px] font-semibold ${tornado ? 'text-[#5b4f86]' : 'text-ink/80'} ${
+                  className={`text-[13px] font-bold leading-none ${
+                    tornado ? 'text-[#5b4f86]' : 'text-ink/75'
+                  } ${
                     isToday
-                      ? 'flex h-7 w-7 items-center justify-center rounded-full bg-dusk text-white shadow-soft'
+                      ? 'flex h-[26px] w-[26px] items-center justify-center rounded-full bg-dusk text-[11px] text-white shadow-soft'
                       : ''
                   }`}
                 >
                   {format(d, 'd')}
                 </span>
 
-                {/* bottom indicators */}
-                <div className="absolute bottom-1 flex items-center gap-0.5">
-                  {actualPeriod && <Drop />}
-                  {typeof log?.mood === 'number' && (
-                    <span className="text-[10px] leading-none">{moodFace(log.mood)}</span>
-                  )}
-                </div>
+                {/* Mood score badge */}
+                {hasMood && (
+                  <div
+                    className="mt-1.5 flex h-[22px] w-[22px] items-center justify-center rounded-full text-[10px] font-bold leading-none text-white"
+                    style={{ background: moodBg(log!.mood!) }}
+                  >
+                    {log!.mood}
+                  </div>
+                )}
 
-                {/* top-right risk marker */}
+                {/* Period drop (bottom-centre, only when no mood badge) */}
+                {actualPeriod && !hasMood && (
+                  <div className="mt-1.5">
+                    <Drop />
+                  </div>
+                )}
+
+                {/* Period drop when mood badge is also present */}
+                {actualPeriod && hasMood && (
+                  <div className="absolute bottom-1 left-1/2 -translate-x-1/2">
+                    <Drop tiny />
+                  </div>
+                )}
+
+                {/* Tornado / watch indicator top-right */}
                 {(tornado || watch) && (
                   <span className="absolute right-1 top-1">
                     <MiniTornado strong={tornado} />
@@ -120,7 +152,7 @@ export default function CalendarPage({ onOpenDay }: { onOpenDay: (d: ISODate) =>
         </div>
       </div>
 
-      {/* This-month insights — fills the space with something useful */}
+      {/* This-month insights */}
       <h2 className="mb-2.5 mt-5 px-1 text-sm font-bold uppercase tracking-[0.14em] text-ink/40">
         This month
       </h2>
@@ -129,7 +161,7 @@ export default function CalendarPage({ onOpenDay }: { onOpenDay: (d: ISODate) =>
           glyph={<Drop big />}
           tint="#FFE7EE"
           label="Period"
-          value={`${shortDate(insights.ps)}`}
+          value={shortDate(insights.ps)}
           sub={`→ ${shortDate(insights.end)}`}
         />
         <Insight
@@ -153,9 +185,27 @@ export default function CalendarPage({ onOpenDay }: { onOpenDay: (d: ISODate) =>
         <Legend stripe label="Expected period" />
         <Legend glyph={<Drop />} label="Logged period" />
         <Legend swatch="linear-gradient(160deg,#FFF0C4,#FFE08A)" label="Ovulation" ring />
-        <Legend swatch="linear-gradient(160deg,#F4EFFC,#ECE4F8)" label="Tornado watch" glyph={<MiniTornado />} />
-        <Legend swatch="linear-gradient(160deg,#E7DEFB,#D7C9F4)" label="Tornado day" glyph={<MiniTornado strong />} />
-        <Legend glyph={<span className="text-base">🙂</span>} label="Your logged mood" />
+        <Legend
+          swatch="linear-gradient(160deg,#F4EFFC,#ECE4F8)"
+          label="Tornado watch"
+          glyph={<MiniTornado />}
+        />
+        <Legend
+          swatch="linear-gradient(160deg,#E7DEFB,#D7C9F4)"
+          label="Tornado day"
+          glyph={<MiniTornado strong />}
+        />
+        <Legend
+          glyph={
+            <div
+              className="flex h-5 w-5 items-center justify-center rounded-full text-[9px] font-bold text-white"
+              style={{ background: '#FFBE30' }}
+            >
+              7
+            </div>
+          }
+          label="Mood score (1–10)"
+        />
       </div>
 
       <motion.p
@@ -165,7 +215,7 @@ export default function CalendarPage({ onOpenDay }: { onOpenDay: (d: ISODate) =>
       >
         A <strong>Tornado watch</strong> covers your vulnerable windows — around ovulation and the 3
         days before your period. A day only becomes a full <strong>Tornado</strong> once your own
-        logs confirm it tends to be severe, so the more you track, the sharper it gets.
+        logs confirm it tends to be severe.
       </motion.p>
     </div>
   )
@@ -197,7 +247,10 @@ function Insight({
 }) {
   return (
     <div className="card flex flex-col items-center p-3 text-center">
-      <div className="flex h-9 w-9 items-center justify-center rounded-2xl" style={{ background: tint }}>
+      <div
+        className="flex h-9 w-9 items-center justify-center rounded-2xl"
+        style={{ background: tint }}
+      >
         {glyph}
       </div>
       <p className="mt-1.5 text-[10px] font-bold uppercase tracking-wide text-ink/40">{label}</p>
@@ -236,8 +289,8 @@ function Legend({
   )
 }
 
-function Drop({ big = false }: { big?: boolean }) {
-  const s = big ? 18 : 11
+function Drop({ big = false, tiny = false }: { big?: boolean; tiny?: boolean }) {
+  const s = big ? 18 : tiny ? 8 : 11
   return (
     <svg width={s} height={s} viewBox="0 0 24 24" fill="none">
       <path

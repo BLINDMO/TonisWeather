@@ -56,7 +56,7 @@ export default function App() {
           {tab === 'home' && <Home onOpenDay={setOpenDate} />}
           {tab === 'calendar' && <CalendarPage onOpenDay={setOpenDate} />}
           {tab === 'workshop' && (
-            <WorkshopPage openPromptId={workshopPrompt} key={workshopPrompt ?? 'w'} />
+            <WorkshopPage openPromptId={workshopPrompt} />
           )}
           {tab === 'me' && <SettingsPage />}
         </motion.main>

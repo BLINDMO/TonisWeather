@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useStore } from '../store'
 import { WORKSHOP_PROMPTS, WORKSHOP_BY_ID, type WorkshopPrompt } from '../lib/workshop'
@@ -7,9 +7,11 @@ import { format } from 'date-fns'
 export default function WorkshopPage({ openPromptId }: { openPromptId?: string | null }) {
   const profile = useStore((s) => s.profile)
   const entries = useStore((s) => s.workshop)
-  const [active, setActive] = useState<WorkshopPrompt | null>(
-    openPromptId ? WORKSHOP_BY_ID[openPromptId] ?? null : null,
-  )
+  const [active, setActive] = useState<WorkshopPrompt | null>(null)
+
+  useEffect(() => {
+    if (openPromptId) setActive(WORKSHOP_BY_ID[openPromptId] ?? null)
+  }, [openPromptId])
 
   return (
     <div className="mx-auto max-w-md px-4 pb-28">
@@ -21,12 +23,10 @@ export default function WorkshopPage({ openPromptId }: { openPromptId?: string |
       </div>
 
       <div className="space-y-3">
-        {WORKSHOP_PROMPTS.map((p, i) => (
+        {WORKSHOP_PROMPTS.map((p) => (
           <motion.button
             key={p.id}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.04 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => setActive(p)}
             className="flex w-full items-center gap-4 rounded-4xl border border-white/60 bg-white p-4 text-left shadow-card transition active:scale-[0.98]"
           >

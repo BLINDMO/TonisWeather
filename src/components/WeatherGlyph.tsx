@@ -31,13 +31,13 @@ export default function WeatherGlyph({
     >
       <defs>
         <linearGradient id={id('sun')} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#FFE39A" />
-          <stop offset="55%" stopColor="#FFC93C" />
-          <stop offset="100%" stopColor="#FFB020" />
+          <stop offset="0%" stopColor="#FFE060" />
+          <stop offset="50%" stopColor="#FFB820" />
+          <stop offset="100%" stopColor="#FF9400" />
         </linearGradient>
         <radialGradient id={id('sunGlow')} cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#FFE7A8" stopOpacity="0.9" />
-          <stop offset="100%" stopColor="#FFE7A8" stopOpacity="0" />
+          <stop offset="0%" stopColor="#FFD84A" stopOpacity="0.95" />
+          <stop offset="100%" stopColor="#FFD84A" stopOpacity="0" />
         </radialGradient>
         <linearGradient id={id('cloud')} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="#FFFFFF" />
@@ -102,7 +102,7 @@ function Sun({ id, animate, big }: { id: IdFn; animate: boolean; big?: boolean }
               y1={50 + Math.sin(a) * r1}
               x2={50 + Math.cos(a) * r2}
               y2={50 + Math.sin(a) * r2}
-              stroke="#FFCF55"
+              stroke="#FFB820"
               strokeWidth="3.4"
               strokeLinecap="round"
             />
@@ -143,7 +143,7 @@ function PartlySun({ id, animate }: { id: IdFn; animate: boolean }) {
                 y1={34 + Math.sin(a) * 17}
                 x2={40 + Math.cos(a) * 24}
                 y2={34 + Math.sin(a) * 24}
-                stroke="#FFCF55"
+                stroke="#FFB820"
                 strokeWidth="3"
                 strokeLinecap="round"
               />
