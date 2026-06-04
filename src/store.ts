@@ -5,16 +5,18 @@ import type {
   DayLog,
   ISODate,
   OnboardingProfile,
+  PeriodSeed,
   WorkshopEntry,
 } from './types'
-import { todayISO } from './lib/date'
+import { todayISO, addDaysISO } from './lib/date'
+import { DEFAULT_FONT_THEME } from './lib/fonts'
 
 const STORAGE_KEY = 'tonis-weather-v1'
 const SCHEMA_VERSION = 1
 
 interface Store extends AppState {
   // onboarding
-  completeOnboarding: (p: OnboardingProfile) => void
+  completeOnboarding: (p: OnboardingProfile, seedPeriods?: PeriodSeed[]) => void
   // logging
   upsertLog: (date: ISODate, patch: Partial<DayLog>) => void
   getLog: (date: ISODate) => DayLog | undefined
@@ -43,7 +45,33 @@ const initial: AppState = {
   profile: null,
   logs: {},
   workshop: [],
-  settings: { showScience: true, giraffeEnabled: true },
+  settings: { showScience: true, giraffeEnabled: true, fontTheme: DEFAULT_FONT_THEME },
+}
+
+/** Expand period seeds (start + length) into per-day period logs. */
+function seedToLogs(
+  base: Record<ISODate, DayLog>,
+  seeds: PeriodSeed[],
+): Record<ISODate, DayLog> {
+  const logs = { ...base }
+  for (const s of seeds) {
+    const len = Math.min(12, Math.max(1, Math.round(s.length)))
+    for (let i = 0; i < len; i++) {
+      const date = addDaysISO(s.start, i)
+      const prev = logs[date]
+      logs[date] = {
+        date,
+        feelings: prev?.feelings ?? [],
+        symptoms: prev?.symptoms ?? [],
+        mood: prev?.mood,
+        note: prev?.note,
+        period: true,
+        flow: prev?.flow ?? 'medium',
+        updatedAt: Date.now(),
+      }
+    }
+  }
+  return logs
 }
 
 export const useStore = create<Store>()(
@@ -51,8 +79,12 @@ export const useStore = create<Store>()(
     (set, get) => ({
       ...initial,
 
-      completeOnboarding: (p) =>
-        set({ onboarded: true, profile: { ...p, completedAt: Date.now() } }),
+      completeOnboarding: (p, seedPeriods = []) =>
+        set((s) => ({
+          onboarded: true,
+          profile: { ...p, completedAt: Date.now() },
+          logs: seedPeriods.length ? seedToLogs(s.logs, seedPeriods) : s.logs,
+        })),
 
       upsertLog: (date, patch) =>
         set((s) => {

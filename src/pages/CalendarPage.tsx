@@ -47,18 +47,20 @@ export default function CalendarPage({ onOpenDay }: { onOpenDay: (d: ISODate) =>
             const log = logs[iso]
             const inMonth = isSameMonth(d, anchor)
             const isToday = iso === today
-            const actualPeriod = log?.period
+            const actualPeriod = !!log?.period
             const isPast = iso <= today
+            const predictedPeriod = fc.isPredictedPeriod && !isPast && !actualPeriod
 
-            // background by prediction priority
+            // background, by priority
             let bg = 'transparent'
+            let stripe = false
             let ring = ''
-            if (fc.tornado) bg = '#7b6f9e'
-            else if (actualPeriod || (fc.isPredictedPeriod && !isPast)) bg = '#ffd7e2'
+            const darkText = fc.tornado
+            if (fc.tornado) bg = '#6f6391'
+            else if (fc.tornadoLevel === 'watch') bg = '#ece8f7'
+            else if (actualPeriod) bg = '#ffd0dd'
+            else if (predictedPeriod) stripe = true
             else if (fc.isPredictedOvulation) bg = '#ffe7a8'
-            else if (fc.isFertile) bg = '#e7f3ff'
-
-            const tornadoText = fc.tornado
             if (fc.isPredictedOvulation) ring = 'ring-2 ring-sun'
 
             return (
@@ -67,29 +69,30 @@ export default function CalendarPage({ onOpenDay }: { onOpenDay: (d: ISODate) =>
                 onClick={() => onOpenDay(iso)}
                 className={`relative flex aspect-square flex-col items-center justify-center rounded-2xl text-sm transition active:scale-90 ${
                   inMonth ? '' : 'opacity-30'
-                } ${ring}`}
-                style={{ background: bg }}
+                } ${ring} ${stripe ? 'period-stripe' : ''}`}
+                style={{ background: stripe ? undefined : bg }}
               >
                 <span
-                  className={`font-semibold ${tornadoText ? 'text-white' : 'text-ink/80'} ${
+                  className={`font-semibold ${darkText ? 'text-white' : 'text-ink/80'} ${
                     isToday ? 'flex h-6 w-6 items-center justify-center rounded-full bg-dusk text-white' : ''
                   }`}
                 >
                   {format(d, 'd')}
                 </span>
 
-                {/* indicators */}
+                {/* bottom indicators */}
                 <div className="absolute bottom-1 flex items-center gap-0.5">
-                  {typeof log?.mood === 'number' ? (
+                  {actualPeriod && <span className="text-[10px] leading-none">🩸</span>}
+                  {typeof log?.mood === 'number' && (
                     <span className="text-[10px] leading-none">{moodFace(log.mood)}</span>
-                  ) : (
-                    <>
-                      {actualPeriod && <Dot color="#ff5d8f" />}
-                      {fc.historicalLow && !fc.tornado && <Dot color="#7b6f9e" />}
-                    </>
                   )}
                 </div>
+
+                {/* top-right risk marker */}
                 {fc.tornado && <span className="absolute right-1 top-1 text-[9px]">🌪️</span>}
+                {fc.tornadoLevel === 'watch' && (
+                  <span className="absolute right-1 top-1 text-[8px] opacity-70">🌀</span>
+                )}
               </button>
             )
           })}
@@ -98,12 +101,12 @@ export default function CalendarPage({ onOpenDay }: { onOpenDay: (d: ISODate) =>
 
       {/* Legend */}
       <div className="card mt-3 grid grid-cols-2 gap-x-3 gap-y-2.5 p-4">
-        <Legend swatch="#ffd7e2" label="Predicted period" />
+        <Legend stripe label="Expected period" />
+        <Legend emojiOnly="🩸" label="Logged period" />
         <Legend swatch="#ffe7a8" label="Ovulation" ring />
-        <Legend swatch="#e7f3ff" label="Fertile window" />
-        <Legend swatch="#7b6f9e" label="Tornado day" emoji="🌪️" />
-        <Legend dot="#ff5d8f" label="Logged period" />
-        <Legend dot="#7b6f9e" label="Historically hard" />
+        <Legend swatch="#ece8f7" label="Tornado watch" emoji="🌀" />
+        <Legend swatch="#6f6391" label="Tornado day" emoji="🌪️" />
+        <Legend emojiOnly="🙂" label="Your logged mood" />
       </div>
 
       <motion.p
@@ -111,8 +114,9 @@ export default function CalendarPage({ onOpenDay }: { onOpenDay: (d: ISODate) =>
         animate={{ opacity: 1 }}
         className="mt-4 px-3 text-center text-xs leading-relaxed text-ink/40"
       >
-        Tornado days blend the science of your late-luteal hormone drop with the days your own
-        history shows tend to be hardest. Tap any day to log feelings and sharpen the forecast.
+        A <strong>Tornado watch</strong> marks the PMDD-prone days before your period. A day only
+        becomes a full <strong>Tornado</strong> once your own history confirms it tends to be
+        severe — so the more you log, the more accurate the warnings get.
       </motion.p>
     </div>
   )
@@ -129,32 +133,32 @@ function NavBtn({ children, onClick }: { children: React.ReactNode; onClick: () 
   )
 }
 
-function Dot({ color }: { color: string }) {
-  return <span className="h-1.5 w-1.5 rounded-full" style={{ background: color }} />
-}
-
 function Legend({
   swatch,
-  dot,
+  stripe,
+  emojiOnly,
   label,
   emoji,
   ring,
 }: {
   swatch?: string
-  dot?: string
+  stripe?: boolean
+  emojiOnly?: string
   label: string
   emoji?: string
   ring?: boolean
 }) {
   return (
     <div className="flex items-center gap-2">
-      {swatch && (
+      {(swatch || stripe) && (
         <span
-          className={`h-5 w-5 rounded-lg ${ring ? 'ring-2 ring-sun' : ''}`}
-          style={{ background: swatch }}
+          className={`h-5 w-5 shrink-0 rounded-lg ${ring ? 'ring-2 ring-sun' : ''} ${
+            stripe ? 'period-stripe' : ''
+          }`}
+          style={stripe ? undefined : { background: swatch }}
         />
       )}
-      {dot && <span className="ml-1.5 h-2.5 w-2.5 rounded-full" style={{ background: dot }} />}
+      {emojiOnly && <span className="w-5 shrink-0 text-center text-base leading-none">{emojiOnly}</span>}
       <span className="text-xs font-semibold text-ink/60">
         {emoji && `${emoji} `}
         {label}

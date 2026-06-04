@@ -3,6 +3,7 @@ import { useStore } from '../store'
 import { useModel } from '../lib/useModel'
 import { format } from 'date-fns'
 import Giraffe from '../components/Giraffe'
+import { FONT_THEMES } from '../lib/fonts'
 
 export default function SettingsPage() {
   const profile = useStore((s) => s.profile)
@@ -133,6 +134,34 @@ export default function SettingsPage() {
           </div>
         </Card>
       )}
+
+      {/* Appearance / fonts */}
+      <Card title="Font">
+        <div className="grid grid-cols-2 gap-2.5">
+          {FONT_THEMES.map((f) => {
+            const active = settings.fontTheme === f.id
+            return (
+              <button
+                key={f.id}
+                onClick={() => setSetting('fontTheme', f.id)}
+                className={`rounded-3xl border-2 p-3 text-left transition active:scale-[0.97] ${
+                  active ? 'border-dusk bg-dusk/5' : 'border-black/5 bg-white'
+                }`}
+              >
+                <div className="text-2xl leading-tight text-ink" style={{ fontFamily: f.display }}>
+                  Aa
+                </div>
+                <div className="mt-0.5 text-sm font-bold text-ink" style={{ fontFamily: f.sans }}>
+                  {f.name}
+                </div>
+                <div className="text-[11px] text-ink/45" style={{ fontFamily: f.sans }}>
+                  {f.blurb}
+                </div>
+              </button>
+            )
+          })}
+        </div>
+      </Card>
 
       {/* Preferences */}
       <Card title="Preferences">

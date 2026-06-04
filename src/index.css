@@ -4,6 +4,9 @@
 
 :root {
   color-scheme: light;
+  /* Default font theme (Sunshine). Overridden at runtime by applyFontTheme(). */
+  --font-display: 'Baloo 2', Georgia, serif;
+  --font-sans: 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 
 html,
@@ -86,6 +89,17 @@ input[type='range'].mood-slider::-moz-range-thumb {
   box-shadow: 0 4px 14px rgba(42, 37, 64, 0.3);
   border: 3px solid #6d5dfc;
   cursor: pointer;
+}
+
+/* Light diagonal red stripes for predicted (expected) period days */
+.period-stripe {
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255, 138, 170, 0.32) 0,
+    rgba(255, 138, 170, 0.32) 5px,
+    rgba(255, 138, 170, 0.08) 5px,
+    rgba(255, 138, 170, 0.08) 11px
+  );
 }
 
 /* Subtle animated aurora used on the weather hero */

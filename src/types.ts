@@ -73,7 +73,14 @@ export interface AppState {
   settings: {
     showScience: boolean
     giraffeEnabled: boolean
+    fontTheme: string
   }
+}
+
+/** A past period to seed during onboarding (start date + how many days it lasted). */
+export interface PeriodSeed {
+  start: ISODate
+  length: number
 }
 
 // ── Derived / computed types (not persisted) ────────────────────────────────
@@ -113,7 +120,12 @@ export interface DayForecast {
   weather: WeatherKind
   /** 1…10 predicted "outlook". Blends cycle science + her tracked history. */
   outlook: number
-  /** True when this is a predicted high-risk PMDD / mood-crash day. */
+  /**
+   * 'watch'   → the PMDD-prone late-luteal window; a hard day is *possible*.
+   * 'tornado' → her history (or a logged crash) confirms this day tends to be severe.
+   */
+  tornadoLevel: 'none' | 'watch' | 'tornado'
+  /** True only for confirmed tornado days (tornadoLevel === 'tornado'). */
   tornado: boolean
   /** True when her own history shows this cycle-day tends to be rough. */
   historicalLow: boolean

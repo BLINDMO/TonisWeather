@@ -71,8 +71,11 @@ export default function Home({ onOpenDay }: { onOpenDay: (d: ISODate) => void })
             <span className="pill bg-white/70 text-ink/70 backdrop-blur">
               Cycle day {fc.cycleDay} · {PHASE_LABEL[fc.phase]}
             </span>
-            {fc.tornado && (
-              <span className="pill animate-pulse bg-storm/90 text-white">🌪️ Tornado watch</span>
+            {fc.tornadoLevel === 'tornado' && (
+              <span className="pill animate-pulse bg-storm/90 text-white">🌪️ Tornado warning</span>
+            )}
+            {fc.tornadoLevel === 'watch' && (
+              <span className="pill bg-storm/70 text-white">🌀 Tornado watch</span>
             )}
           </div>
 
@@ -132,7 +135,8 @@ export default function Home({ onOpenDay }: { onOpenDay: (d: ISODate) => void })
             <div className="my-1 text-3xl">{WEATHER_EMOJI[d.weather]}</div>
             <p className="text-[11px] font-bold leading-tight text-ink/70">{WEATHER_LABEL[d.weather]}</p>
             <p className="text-[10px] text-ink/50">Outlook {d.outlook.toFixed(0)}</p>
-            {d.tornado && <span className="absolute right-2 top-2 text-sm">🌪️</span>}
+            {d.tornadoLevel === 'tornado' && <span className="absolute right-2 top-2 text-sm">🌪️</span>}
+            {d.tornadoLevel === 'watch' && <span className="absolute right-2 top-2 text-xs opacity-70">🌀</span>}
           </button>
         ))}
       </div>

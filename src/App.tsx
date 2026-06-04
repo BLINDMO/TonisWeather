@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useStore } from './store'
+import { applyFontTheme } from './lib/fonts'
+import Splash from './components/Splash'
 import Onboarding from './pages/Onboarding'
 import Home from './pages/Home'
 import CalendarPage from './pages/CalendarPage'
@@ -14,13 +16,24 @@ import type { ISODate } from './types'
 export default function App() {
   const onboarded = useStore((s) => s.onboarded)
   const name = useStore((s) => s.profile?.name ?? 'Toni')
+  const fontTheme = useStore((s) => s.settings.fontTheme)
+
+  useEffect(() => {
+    applyFontTheme(fontTheme)
+  }, [fontTheme])
 
   const [tab, setTab] = useState<Tab>('home')
   const [openDate, setOpenDate] = useState<ISODate | null>(null)
   const [giraffeDate, setGiraffeDate] = useState<ISODate | null>(null)
   const [workshopPrompt, setWorkshopPrompt] = useState<string | null>(null)
 
-  if (!onboarded) return <Onboarding />
+  if (!onboarded)
+    return (
+      <>
+        <Splash />
+        <Onboarding />
+      </>
+    )
 
   const goWorkshop = (promptId?: string) => {
     setGiraffeDate(null)
@@ -30,6 +43,7 @@ export default function App() {
 
   return (
     <div className="relative min-h-[100dvh] bg-gradient-to-b from-mist via-white to-[#eef0ff]">
+      <Splash />
       <AnimatePresence mode="wait">
         <motion.main
           key={tab}
