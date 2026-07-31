@@ -35,6 +35,12 @@ export default function WeatherGlyph({
           <stop offset="55%" stopColor="#FFC93C" />
           <stop offset="100%" stopColor="#FFB020" />
         </linearGradient>
+        {/* off-center light source makes the sun read as a sphere */}
+        <radialGradient id={id('sunCore')} cx="38%" cy="34%" r="75%">
+          <stop offset="0%" stopColor="#FFF6D6" />
+          <stop offset="45%" stopColor="#FFD966" />
+          <stop offset="100%" stopColor="#FFAF1E" />
+        </radialGradient>
         <radialGradient id={id('sunGlow')} cx="50%" cy="50%" r="50%">
           <stop offset="0%" stopColor="#FFE7A8" stopOpacity="0.9" />
           <stop offset="100%" stopColor="#FFE7A8" stopOpacity="0" />
@@ -95,16 +101,28 @@ type IdFn = (s: string) => string
 function Sun({ id, animate, big }: { id: IdFn; animate: boolean; big?: boolean }) {
   return (
     <g>
-      <circle cx="50" cy="50" r="42" fill={`url(#${id('sunGlow')})`} />
+      {/* breathing double glow */}
+      <motion.circle
+        cx="50"
+        cy="50"
+        r="44"
+        fill={`url(#${id('sunGlow')})`}
+        animate={animate ? { scale: [1, 1.08, 1], opacity: [0.75, 1, 0.75] } : {}}
+        transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut' }}
+        style={{ transformOrigin: '50px 50px' }}
+      />
+      <circle cx="50" cy="50" r="30" fill={`url(#${id('sunGlow')})`} opacity="0.7" />
+      {/* rotating rays, alternating long/short */}
       <motion.g
         animate={animate ? { rotate: 360 } : {}}
-        transition={{ duration: 60, repeat: Infinity, ease: 'linear' }}
+        transition={{ duration: 70, repeat: Infinity, ease: 'linear' }}
         style={{ transformOrigin: '50px 50px' }}
       >
         {Array.from({ length: 12 }).map((_, i) => {
           const a = (i / 12) * Math.PI * 2
+          const long = i % 2 === 0
           const r1 = big ? 27 : 28
-          const r2 = big ? 38 : 36
+          const r2 = r1 + (long ? (big ? 12 : 9) : big ? 7 : 5)
           return (
             <line
               key={i}
@@ -113,23 +131,44 @@ function Sun({ id, animate, big }: { id: IdFn; animate: boolean; big?: boolean }
               x2={50 + Math.cos(a) * r2}
               y2={50 + Math.sin(a) * r2}
               stroke="#FFCF55"
-              strokeWidth="3.4"
+              strokeWidth={long ? 3.6 : 2.6}
               strokeLinecap="round"
+              opacity={long ? 1 : 0.75}
             />
           )
         })}
       </motion.g>
+      {/* sphere-shaded core */}
       <motion.circle
         cx="50"
         cy="50"
         r="20"
-        fill={`url(#${id('sun')})`}
+        fill={`url(#${id('sunCore')})`}
         filter={`url(#${id('soft')})`}
-        animate={animate ? { scale: [1, 1.04, 1] } : {}}
+        animate={animate ? { scale: [1, 1.045, 1] } : {}}
         transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
         style={{ transformOrigin: '50px 50px' }}
       />
-      <ellipse cx="44" cy="43" rx="7" ry="5" fill="#FFF3C9" opacity="0.7" />
+      <ellipse cx="43.5" cy="42.5" rx="6.5" ry="4.6" fill="#FFF8E2" opacity="0.8" />
+      {/* sparkles on peak-sunshine days */}
+      {big &&
+        animate &&
+        [
+          { x: 20, y: 26, d: 0, s: 1 },
+          { x: 82, y: 36, d: 0.9, s: 0.75 },
+          { x: 74, y: 78, d: 1.6, s: 0.9 },
+        ].map((p, i) => (
+          <g key={i} transform={`translate(${p.x} ${p.y}) scale(${p.s})`}>
+            <motion.path
+              d="M0 -5 L1.3 -1.3 L5 0 L1.3 1.3 L0 5 L-1.3 1.3 L-5 0 L-1.3 -1.3 Z"
+              fill="#FFF3C9"
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: [0, 1, 0], scale: [0.5, 1.15, 0.5] }}
+              transition={{ duration: 2.2, repeat: Infinity, delay: p.d, ease: 'easeInOut' }}
+              style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
+            />
+          </g>
+        ))}
     </g>
   )
 }
@@ -170,6 +209,10 @@ function PartlySun({ id, animate }: { id: IdFn; animate: boolean }) {
 function Clouds({ id, animate }: { id: IdFn; animate: boolean }) {
   return (
     <g>
+      {/* distant layer for parallax depth */}
+      <g opacity="0.45">
+        <CloudShape id={id} x={68} y={28} scale={0.5} animate={animate} delay={1.3} />
+      </g>
       <CloudShape id={id} x={30} y={36} scale={0.78} dark animate={animate} delay={0.6} />
       <CloudShape id={id} x={50} y={56} scale={1.02} animate={animate} />
     </g>
@@ -193,16 +236,22 @@ function CloudShape({
   animate?: boolean
   delay?: number
 }) {
+  const fill = `url(#${id(dark ? 'cloudDark' : 'cloud')})`
   return (
     <motion.g
-      animate={animate ? { x: [0, 3, 0] } : {}}
+      animate={animate ? { x: [0, 3.5, 0], y: [0, -1.5, 0] } : {}}
       transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut', delay }}
     >
       <g transform={`translate(${x} ${y}) scale(${scale})`} filter={`url(#${id('soft')})`}>
-        <ellipse cx="0" cy="6" rx="22" ry="14" fill={`url(#${id(dark ? 'cloudDark' : 'cloud')})`} />
-        <circle cx="13" cy="0" r="13" fill={`url(#${id(dark ? 'cloudDark' : 'cloud')})`} />
-        <circle cx="-12" cy="2" r="11" fill={`url(#${id(dark ? 'cloudDark' : 'cloud')})`} />
-        <rect x="-22" y="6" width="44" height="14" rx="7" fill={`url(#${id(dark ? 'cloudDark' : 'cloud')})`} />
+        <ellipse cx="0" cy="6" rx="22" ry="14" fill={fill} />
+        <circle cx="13" cy="0" r="13" fill={fill} />
+        <circle cx="-12" cy="2" r="11" fill={fill} />
+        <rect x="-22" y="6" width="44" height="14" rx="7" fill={fill} />
+        {/* volumetric base shading */}
+        <ellipse cx="0" cy="15" rx="19" ry="5.5" fill={dark ? '#98A0C4' : '#D9E2F5'} opacity="0.5" />
+        {/* top-light sheen on the puffs */}
+        <ellipse cx="9" cy="-7" rx="9" ry="5" fill="#fff" opacity={dark ? 0.32 : 0.85} />
+        <ellipse cx="-11" cy="-3" rx="6.5" ry="3.8" fill="#fff" opacity={dark ? 0.2 : 0.6} />
       </g>
     </motion.g>
   )
@@ -278,6 +327,25 @@ function RainCloud({ id, animate, heavy }: { id: IdFn; animate: boolean; heavy?:
   return (
     <g>
       <CloudShape id={id} x={50} y={44} scale={1.05} dark animate={animate} />
+      {/* drizzle carries a soft drifting mist under the cloud */}
+      {!heavy &&
+        [
+          { y: 78, w: 30, d: 0 },
+          { y: 84, w: 22, d: 1.1 },
+        ].map((m, i) => (
+          <motion.rect
+            key={i}
+            x={50 - m.w / 2}
+            y={m.y}
+            width={m.w}
+            height="3"
+            rx="1.5"
+            fill="#C3CFE8"
+            initial={{ opacity: 0 }}
+            animate={animate ? { opacity: [0, 0.5, 0], x: [-4, 4, -4] } : { opacity: 0.35 }}
+            transition={{ duration: 4.2, repeat: Infinity, delay: m.d, ease: 'easeInOut' }}
+          />
+        ))}
       <Drops heavy={heavy} id={id} />
     </g>
   )
