@@ -63,6 +63,16 @@ export default function WeatherGlyph({
           <stop offset="0%" stopColor="#B6A9E6" />
           <stop offset="100%" stopColor="#7E72B0" />
         </linearGradient>
+        {/* horizontal cylinder shading for the vortex bands */}
+        <linearGradient id={id('funnelBand')} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#D8CDF8" />
+          <stop offset="48%" stopColor="#A99BDC" />
+          <stop offset="100%" stopColor="#75689F" />
+        </linearGradient>
+        <radialGradient id={id('funnelGlow')} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#B7A8EC" stopOpacity="0.5" />
+          <stop offset="100%" stopColor="#B7A8EC" stopOpacity="0" />
+        </radialGradient>
         <filter id={id('soft')} x="-40%" y="-40%" width="180%" height="180%">
           <feDropShadow dx="0" dy="3" stdDeviation="3" floodColor="#5B6CA8" floodOpacity="0.22" />
         </filter>
@@ -198,24 +208,67 @@ function CloudShape({
   )
 }
 
-function Drops({ heavy, color }: { heavy?: boolean; color: string }) {
-  const xs = heavy ? [30, 42, 54, 66, 38, 58] : [38, 50, 62]
+/**
+ * Real teardrop rain with a wind slant, varied sizes/speeds, and soft
+ * landing ripples — replaces the old dashed-line drops.
+ */
+function Drops({ heavy, id }: { heavy?: boolean; id: IdFn }) {
+  const cfg = heavy
+    ? [
+        { x: 30, delay: 0, s: 1 },
+        { x: 41, delay: 0.38, s: 0.78 },
+        { x: 52, delay: 0.14, s: 1.08 },
+        { x: 63, delay: 0.52, s: 0.84 },
+        { x: 71, delay: 0.26, s: 0.66 },
+        { x: 36, delay: 0.64, s: 0.6 },
+      ]
+    : [
+        { x: 38, delay: 0, s: 0.85 },
+        { x: 50, delay: 0.36, s: 1 },
+        { x: 62, delay: 0.62, s: 0.75 },
+      ]
+  const dur = heavy ? 0.8 : 1.15
+  const wind = heavy ? -3 : -1.5
   return (
     <g>
-      {xs.map((x, i) => (
-        <motion.line
+      {cfg.map((d, i) => (
+        <motion.g
           key={i}
-          x1={x}
-          y1={72}
-          x2={x - 2}
-          y2={80}
-          stroke={color}
-          strokeWidth="3.2"
-          strokeLinecap="round"
-          initial={{ opacity: 0, y: -4 }}
-          animate={{ opacity: [0, 1, 0], y: [0, 14] }}
-          transition={{ duration: heavy ? 0.8 : 1, repeat: Infinity, delay: (i % 3) * 0.22, ease: 'easeIn' }}
-        />
+          initial={{ y: 0, opacity: 0 }}
+          animate={{ y: [0, 16], x: [0, wind], opacity: [0, 1, 1, 0] }}
+          transition={{
+            duration: dur,
+            repeat: Infinity,
+            delay: d.delay,
+            ease: 'easeIn',
+            times: [0, 0.2, 0.75, 1],
+          }}
+        >
+          <path
+            d={`M${d.x} 66 c${2.6 * d.s} ${3.4 * d.s} ${3.2 * d.s} ${5.4 * d.s} 0 ${7.6 * d.s} c${-3.2 * d.s} ${-2.2 * d.s} ${-2.6 * d.s} ${-4.2 * d.s} 0 ${-7.6 * d.s} Z`}
+            fill={`url(#${id('rain')})`}
+          />
+          <ellipse
+            cx={d.x - 1.1 * d.s}
+            cy={68.8}
+            rx={0.9 * d.s}
+            ry={1.3 * d.s}
+            fill="#fff"
+            opacity="0.5"
+          />
+        </motion.g>
+      ))}
+      {/* landing ripples */}
+      {(heavy ? [34, 52, 66] : [50]).map((x, i) => (
+        <motion.g
+          key={`r${i}`}
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: [0.2, 1], opacity: [0.6, 0] }}
+          transition={{ duration: 0.9, repeat: Infinity, delay: i * 0.3 + dur * 0.7, ease: 'easeOut' }}
+          style={{ transformOrigin: `${x}px 88px` }}
+        >
+          <ellipse cx={x} cy={88} rx={7} ry={2.3} fill="none" stroke={`url(#${id('rain')})`} strokeWidth="1.5" />
+        </motion.g>
       ))}
     </g>
   )
@@ -225,7 +278,7 @@ function RainCloud({ id, animate, heavy }: { id: IdFn; animate: boolean; heavy?:
   return (
     <g>
       <CloudShape id={id} x={50} y={44} scale={1.05} dark animate={animate} />
-      <Drops heavy={heavy} color={`url(#${id('rain')})`} />
+      <Drops heavy={heavy} id={id} />
     </g>
   )
 }
@@ -233,46 +286,119 @@ function RainCloud({ id, animate, heavy }: { id: IdFn; animate: boolean; heavy?:
 function Storm({ id, animate }: { id: IdFn; animate: boolean }) {
   return (
     <g>
-      <CloudShape id={id} x={50} y={40} scale={1.08} dark animate={animate} />
-      <motion.path
-        d="M52 56 L44 70 L51 70 L43 84 L60 66 L52 66 Z"
-        fill={`url(#${id('bolt')})`}
-        animate={animate ? { opacity: [1, 1, 0.3, 1, 0.5, 1], filter: ['drop-shadow(0 0 0px #FFD166)', 'drop-shadow(0 0 6px #FFD166)', 'drop-shadow(0 0 0px #FFD166)'] } : {}}
-        transition={{ duration: 2.4, repeat: Infinity, times: [0, 0.1, 0.16, 0.2, 0.28, 0.5] }}
-      />
-      <Drops color="#B9A9F0" />
+      <CloudShape id={id} x={50} y={38} scale={1.1} dark animate={animate} />
+      {/* double-layer bolt: blurred glow behind a crisp gradient core */}
+      <motion.g
+        animate={animate ? { opacity: [1, 1, 0.25, 1, 0.45, 1] } : {}}
+        transition={{ duration: 2.6, repeat: Infinity, times: [0, 0.08, 0.14, 0.2, 0.3, 0.5] }}
+      >
+        <path
+          d="M53 54 L42 71 L50 71 L41 87 L62 65 L53 65 Z"
+          fill="#FFD166"
+          opacity="0.4"
+          style={{ filter: 'blur(3px)' }}
+        />
+        <path d="M52 55 L44 70 L51 70 L44 84 L59 66 L52 66 Z" fill={`url(#${id('bolt')})`} />
+        <path d="M51.4 57 L46.5 65.5" stroke="#FFF3C9" strokeWidth="1.4" strokeLinecap="round" opacity="0.85" />
+      </motion.g>
+      <Drops heavy id={id} />
     </g>
   )
 }
 
+/**
+ * The tornado, rebuilt as a layered vortex: a lavender glow, a blurred
+ * funnel column, and a stack of cylinder-shaded bands that sway as one and
+ * ripple out of phase — with debris kicked up where the tip meets the ground.
+ */
 function Tornado({ id, animate }: { id: IdFn; animate: boolean }) {
+  const bands = [
+    { cy: 45, rx: 20, ry: 6.6, amp: 3.2 },
+    { cy: 54, rx: 15.5, ry: 5.6, amp: 2.7 },
+    { cy: 62, rx: 11.6, ry: 4.7, amp: 2.3 },
+    { cy: 69.5, rx: 8.2, ry: 3.9, amp: 1.9 },
+    { cy: 76, rx: 5.6, ry: 3.1, amp: 1.5 },
+    { cy: 81.5, rx: 3.6, ry: 2.4, amp: 1.1 },
+  ]
   return (
     <g>
-      <CloudShape id={id} x={50} y={30} scale={1.05} dark animate={animate} />
+      <ellipse cx="50" cy="58" rx="32" ry="30" fill={`url(#${id('funnelGlow')})`} />
+      <CloudShape id={id} x={50} y={30} scale={1.08} dark animate={animate} />
       <motion.g
-        animate={animate ? { rotate: [-3, 3, -3] } : {}}
-        transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
-        style={{ transformOrigin: '50px 60px' }}
+        animate={animate ? { rotate: [-2.4, 2.4, -2.4] } : {}}
+        transition={{ duration: 3.2, repeat: Infinity, ease: 'easeInOut' }}
+        style={{ transformOrigin: '50px 44px' }}
       >
+        {/* blurred column ties the bands into one funnel */}
         <path
-          d="M30 40 Q50 34 70 40 Q58 48 64 56 Q50 52 56 62 Q46 60 50 70 Q44 72 46 79 Q43 84 41 88 Q39 82 43 76 Q35 74 44 66 Q33 64 42 54 Q31 52 40 46 Q30 44 30 40 Z"
+          d="M32 45 C40 40 60 40 68 45 C62 58 56 68 51 80 C49.5 85 48.5 87 47.5 88.5 C46.5 87 46 84 46 80 C42 68 36 56 32 45 Z"
           fill={`url(#${id('funnel')})`}
-          filter={`url(#${id('soft')})`}
+          opacity="0.5"
+          style={{ filter: 'blur(2.5px)' }}
         />
-        <path d="M34 42 Q50 37 66 42" stroke="#E4DBFB" strokeWidth="2.4" fill="none" opacity="0.7" />
-        <path d="M40 52 Q50 49 60 52" stroke="#E4DBFB" strokeWidth="2.1" fill="none" opacity="0.6" />
-        <path d="M44 62 Q50 60 56 62" stroke="#E4DBFB" strokeWidth="1.8" fill="none" opacity="0.6" />
+        {bands.map((b, i) => (
+          <motion.g
+            key={i}
+            animate={animate ? { x: [-b.amp, b.amp, -b.amp] } : {}}
+            transition={{ duration: 1.7, repeat: Infinity, ease: 'easeInOut', delay: i * 0.17 }}
+          >
+            <ellipse
+              cx="50"
+              cy={b.cy}
+              rx={b.rx}
+              ry={b.ry}
+              fill={`url(#${id('funnelBand')})`}
+              filter={`url(#${id('soft')})`}
+            />
+            {/* top-edge sheen sells the cylinder */}
+            <ellipse
+              cx={50 - b.rx * 0.22}
+              cy={b.cy - b.ry * 0.32}
+              rx={b.rx * 0.6}
+              ry={b.ry * 0.48}
+              fill="#fff"
+              opacity="0.18"
+            />
+          </motion.g>
+        ))}
+        <motion.circle
+          cx="47.5"
+          cy="86.5"
+          r="2"
+          fill={`url(#${id('funnelBand')})`}
+          animate={animate ? { x: [-1.2, 1.2, -1.2] } : {}}
+          transition={{ duration: 1.1, repeat: Infinity, ease: 'easeInOut' }}
+        />
       </motion.g>
+      {/* debris at the base */}
       {animate &&
-        Array.from({ length: 5 }).map((_, i) => (
+        [
+          { x: 40, y: 86, d: 0, dir: -1 },
+          { x: 56, y: 87, d: 0.5, dir: 1 },
+          { x: 47, y: 89, d: 0.9, dir: -1 },
+          { x: 52, y: 88, d: 1.2, dir: 1 },
+        ].map((p, i) => (
           <motion.circle
             key={i}
-            cx={32 + i * 9}
-            cy={36}
-            r={1.6}
+            cx={p.x}
+            cy={p.y}
+            r={1.4}
+            fill="#B9ABE4"
+            animate={{ x: [0, p.dir * 9], y: [0, -3.5, 1], opacity: [0, 0.9, 0] }}
+            transition={{ duration: 1.4, repeat: Infinity, delay: p.d, ease: 'easeOut' }}
+          />
+        ))}
+      {/* dust orbiting the upper funnel */}
+      {animate &&
+        Array.from({ length: 6 }).map((_, i) => (
+          <motion.circle
+            key={`d${i}`}
+            cx={30 + i * 8}
+            cy={40 + (i % 3) * 4}
+            r={1.3}
             fill="#CDBFF6"
-            animate={{ x: [-6, 6, -6], y: [0, -4, 0], opacity: [0.3, 0.9, 0.3] }}
-            transition={{ duration: 1.8, repeat: Infinity, delay: i * 0.18 }}
+            animate={{ x: [-7, 7, -7], y: [0, -5, 0], opacity: [0.25, 0.95, 0.25] }}
+            transition={{ duration: 1.9, repeat: Infinity, delay: i * 0.16 }}
           />
         ))}
     </g>
