@@ -103,7 +103,7 @@ export default function CalendarPage({ onOpenDay }: { onOpenDay: (d: ISODate) =>
                 {/* bottom indicators */}
                 <div className="absolute bottom-1 flex items-center gap-0.5">
                   {actualPeriod && <Drop />}
-                  {typeof log?.mood === 'number' && (
+                  {typeof log?.mood === 'number' && (log.moodSet || log.mood !== 7) && (
                     <span className="text-[10px] leading-none">{moodFace(log.mood)}</span>
                   )}
                 </div>
@@ -163,9 +163,9 @@ export default function CalendarPage({ onOpenDay }: { onOpenDay: (d: ISODate) =>
         animate={{ opacity: 1 }}
         className="mt-4 px-3 text-center text-xs leading-relaxed text-ink/40"
       >
-        A <strong>Tornado watch</strong> covers your vulnerable windows — around ovulation and the 3
-        days before your period. A day only becomes a full <strong>Tornado</strong> once your own
-        logs confirm it tends to be severe, so the more you track, the sharper it gets.
+        A <strong>Tornado watch</strong> covers your vulnerable windows — around ovulation and the
+        late-luteal run-up to your period. A day only becomes a full <strong>Tornado</strong> once
+        your own logs confirm it tends to be severe, so the more you track, the sharper it gets.
       </motion.p>
     </div>
   )

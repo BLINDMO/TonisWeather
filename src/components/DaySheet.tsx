@@ -28,6 +28,10 @@ export default function DaySheet({ date, onClose, onHardDay }: Props) {
   const model = useModel()
 
   const [mood, setMood] = useState(7)
+  // Only a slider Toni actually touched (now or on a previous save) is real
+  // data. Untouched defaults used to be saved as mood=7 on every save, which
+  // taught the model that even her worst days were a 7.
+  const [moodTouched, setMoodTouched] = useState(false)
   const [feelings, setFeelings] = useState<string[]>([])
   const [period, setPeriod] = useState(false)
   const [flow, setFlow] = useState<FlowLevel | undefined>()
@@ -36,6 +40,7 @@ export default function DaySheet({ date, onClose, onHardDay }: Props) {
   useEffect(() => {
     if (date) {
       setMood(log?.mood ?? 7)
+      setMoodTouched(log?.moodSet === true || (log?.mood != null && log.mood !== 7))
       setFeelings(log?.feelings ?? [])
       setPeriod(log?.period ?? false)
       setFlow(log?.flow)
@@ -50,8 +55,18 @@ export default function DaySheet({ date, onClose, onHardDay }: Props) {
     setFeelings((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]))
 
   const save = () => {
-    upsert(date, { mood, feelings, period, flow: period ? flow : undefined, note })
-    const hard = isHardDay(feelings, mood)
+    const patch: Parameters<typeof upsert>[1] = {
+      feelings,
+      period,
+      flow: period ? flow : undefined,
+      note,
+    }
+    if (moodTouched) {
+      patch.mood = mood
+      patch.moodSet = true
+    }
+    upsert(date, patch)
+    const hard = isHardDay(feelings, moodTouched ? mood : undefined)
     onClose()
     if (hard && useStore.getState().settings.giraffeEnabled) {
       setTimeout(() => onHardDay(date), 220)
@@ -97,7 +112,18 @@ export default function DaySheet({ date, onClose, onHardDay }: Props) {
               {/* Mood slider */}
               <section className="rounded-4xl bg-mist p-5">
                 <SectionTitle>How are you feeling today?</SectionTitle>
-                <MoodSlider value={mood} onChange={setMood} />
+                <MoodSlider
+                  value={mood}
+                  onChange={(v) => {
+                    setMood(v)
+                    setMoodTouched(true)
+                  }}
+                />
+                {!moodTouched && (
+                  <p className="mt-2 text-center text-[11px] font-semibold text-ink/35">
+                    Slide to set — it only counts once you move it
+                  </p>
+                )}
               </section>
 
               {/* Feelings */}

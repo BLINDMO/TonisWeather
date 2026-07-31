@@ -37,11 +37,21 @@ The engine starts from your onboarding answers, then continuously re-learns:
 
 1. **Real period start dates** you log refine your true cycle length + anchor
    (recent cycles weighted more heavily).
-2. **Your 1–10 mood logs**, indexed by cycle day, reveal which days are historically
-   hard *for you specifically* — not just the textbook average.
+2. **Your mood signal** — the 1–10 slider *when you actually set it*, blended with
+   the feeling tags you tap (each tag carries a valence) — indexed by the cycle
+   day it really fell on (inside its own cycle, between your real period starts),
+   reveals which days are historically hard *for you specifically*. An untouched
+   slider is never treated as data.
 3. Predictions blend **textbook hormone science** (`src/lib/hormones.ts`) with **your
-   personal history** (`src/lib/cycle.ts`), with a confidence score that grows as you
-   log more.
+   personal history** (`src/lib/cycle.ts`). The confidence score grows as you log
+   more, but is capped by how much your cycle lengths actually vary — a swingy
+   cycle honestly reports lower confidence.
+4. If a predicted period doesn't arrive, the app treats the cycle as **running
+   late** (holding you in the late-luteal watch window and predicting "any day
+   now") instead of wrapping around and pretending a new cycle started.
+5. Days your logs show as genuine crashes (a very low mood, or strongly negative
+   feelings like *irritable + overwhelmed*) escalate the matching cycle day from
+   **watch** to **tornado** inside your vulnerable windows.
 
 The hormone model scales the classic landmarks (estrogen peak before ovulation, the
 LH surge, the mid-luteal progesterone dome, and the late-luteal withdrawal that

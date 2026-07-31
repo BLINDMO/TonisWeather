@@ -22,6 +22,13 @@ export interface DayLog {
   date: ISODate
   /** 1 (out of control / negative) … 10 (super happy / content). undefined = not logged. */
   mood?: number
+  /**
+   * True only when Toni actually moved the slider (or re-saved a real value).
+   * Older logs saved the untouched slider default (7) on every save, which
+   * poisoned the learning model — legacy logs without this flag whose mood is
+   * exactly the default are treated as "not logged".
+   */
+  moodSet?: boolean
   /** Selected feeling tag ids. */
   feelings: string[]
   /** Did her period flow happen today? */

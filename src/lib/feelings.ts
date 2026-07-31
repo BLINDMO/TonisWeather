@@ -46,6 +46,27 @@ export const FEELING_CATEGORIES: { id: FeelingTag['category']; label: string }[]
   { id: 'body', label: 'Body' },
 ]
 
+/**
+ * Convert tapped feelings into a 1–10 mood-scale score, or null if none tapped.
+ * Average valence spans -2…+2 → mapped onto the same scale as the mood slider,
+ * so the model can learn from days where Toni tapped feelings but never
+ * touched the slider (which is most days).
+ */
+export function feelingsValenceScore(feelingIds: string[]): number | null {
+  const vals: number[] = feelingIds
+    .map((id) => FEELING_BY_ID[id]?.valence)
+    .filter((v): v is FeelingTag['valence'] => typeof v === 'number')
+  if (!vals.length) return null
+  const avg = vals.reduce((a, b) => a + b, 0) / vals.length
+  return Math.min(10, Math.max(1, 5.5 + avg * 2.25))
+}
+
+/** A day whose tapped feelings alone signal a genuine crash (e.g. irritable + overwhelmed). */
+export function isCrashFeelings(feelingIds: string[]): boolean {
+  const veryNegative = feelingIds.filter((id) => (FEELING_BY_ID[id]?.valence ?? 0) <= -2).length
+  return veryNegative >= 2
+}
+
 /** True when a selection of feelings warrants the giraffe's gentle check-in. */
 export function isHardDay(feelingIds: string[], mood?: number): boolean {
   const hasNegative = feelingIds.some((id) => (FEELING_BY_ID[id]?.valence ?? 0) <= -1)
