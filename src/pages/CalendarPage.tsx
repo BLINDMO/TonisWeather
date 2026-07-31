@@ -130,7 +130,7 @@ export default function CalendarPage({ onOpenDay }: { onOpenDay: (d: ISODate) =>
           tint="#FFE7EE"
           label="Period"
           value={`${shortDate(insights.ps)}`}
-          sub={`→ ${shortDate(insights.end)}`}
+          sub={`± ${model.predictionWindow} day${model.predictionWindow === 1 ? '' : 's'}`}
         />
         <Insight
           glyph={<SunDot />}

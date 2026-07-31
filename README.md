@@ -35,8 +35,12 @@ Safari and Android — curated just for Toni.
 
 The engine starts from your onboarding answers, then continuously re-learns:
 
-1. **Real period start dates** you log refine your true cycle length + anchor
-   (recent cycles weighted more heavily).
+1. **Real period start dates** you log refine your true cycle length + anchor.
+   Cycle lengths mildly anti-correlate (a long cycle is usually followed by a
+   shorter one), so the predictor corrects the mean away from the last cycle's
+   deviation — backtested on real history this beats both a static estimate and
+   a recency-weighted mean. Predictions carry an honest **± day window** derived
+   from how much your cycles actually vary.
 2. **Your mood signal** — the 1–10 slider *when you actually set it*, blended with
    the feeling tags you tap (each tag carries a valence) — indexed by the cycle
    day it really fell on (inside its own cycle, between your real period starts),

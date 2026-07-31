@@ -119,7 +119,10 @@ export default function Home({ onOpenDay }: { onOpenDay: (d: ISODate) => void })
         <div className="card flex flex-col justify-center p-4">
           <p className="text-xs font-bold text-ink/45">Next period</p>
           <p className="font-display text-2xl font-semibold text-ink">
-            {untilPeriod <= 0 ? 'Now' : `${untilPeriod} day${untilPeriod === 1 ? '' : 's'}`}
+            {untilPeriod <= 0 ? 'Any day now' : `${untilPeriod} day${untilPeriod === 1 ? '' : 's'}`}
+            {untilPeriod > 0 && (
+              <span className="ml-1 text-sm font-semibold text-ink/40">± {model.predictionWindow}</span>
+            )}
           </p>
           <div className="mt-1.5 flex items-center gap-1.5">
             <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-black/5">

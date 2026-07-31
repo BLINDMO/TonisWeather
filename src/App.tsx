@@ -2,7 +2,11 @@ import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useStore } from './store'
 import { applyFontTheme } from './lib/fonts'
+import { useModel } from './lib/useModel'
+import { forecastFor } from './lib/cycle'
+import { todayISO } from './lib/date'
 import Splash from './components/Splash'
+import WeatherIntro from './components/WeatherIntro'
 import Onboarding from './pages/Onboarding'
 import Home from './pages/Home'
 import CalendarPage from './pages/CalendarPage'
@@ -26,6 +30,9 @@ export default function App() {
   const [openDate, setOpenDate] = useState<ISODate | null>(null)
   const [giraffeDate, setGiraffeDate] = useState<ISODate | null>(null)
   const [workshopPrompt, setWorkshopPrompt] = useState<string | null>(null)
+  const [introDone, setIntroDone] = useState(false)
+  const model = useModel()
+  const introFc = onboarded && model && !introDone ? forecastFor(model, todayISO()) : null
 
   if (!onboarded)
     return (
@@ -44,6 +51,13 @@ export default function App() {
   return (
     <div className="relative min-h-[100dvh] bg-gradient-to-b from-mist via-white to-[#eef0ff]">
       <Splash />
+      {introFc && (
+        <WeatherIntro
+          kind={introFc.weather}
+          headline={introFc.headline}
+          onDone={() => setIntroDone(true)}
+        />
+      )}
       <AnimatePresence mode="wait">
         <motion.main
           key={tab}
