@@ -16,8 +16,17 @@ const FALLBACK_SANS = `system-ui, -apple-system, 'Segoe UI', sans-serif`
 const FALLBACK_DISPLAY = `Georgia, 'Times New Roman', serif`
 
 export const FONT_THEMES: FontTheme[] = [
+  // 'sunshine' is the stored id of the default theme on existing devices, so
+  // it keeps its id while carrying the app's modern signature look.
   {
     id: 'sunshine',
+    name: 'Modern',
+    blurb: 'The signature look',
+    display: `'Outfit', ${FALLBACK_SANS}`,
+    sans: `'Manrope', ${FALLBACK_SANS}`,
+  },
+  {
+    id: 'rounded',
     name: 'Sunshine',
     blurb: 'Rounded & friendly',
     display: `'Baloo 2', ${FALLBACK_DISPLAY}`,
