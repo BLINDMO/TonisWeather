@@ -50,10 +50,21 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.6);
   }
   .card {
-    @apply rounded-4xl bg-white/80 shadow-card border border-white/60;
+    @apply rounded-4xl border border-white/70 bg-white/70 shadow-card backdrop-blur-xl;
   }
   .pill {
     @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold;
+  }
+  /* Editorial page header: tiny tracked eyebrow over a big display title. */
+  .eyebrow {
+    @apply text-[11px] font-bold uppercase tracking-[0.18em] text-ink/35;
+  }
+  .page-title {
+    @apply font-display text-[2rem] font-bold leading-none text-ink;
+  }
+  /* Ambient aurora blob to float behind glass panels. */
+  .glow {
+    @apply pointer-events-none absolute rounded-full opacity-60 blur-2xl;
   }
 }
 

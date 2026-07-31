@@ -44,22 +44,30 @@ export default function Home({ onOpenDay }: { onOpenDay: (d: ISODate) => void })
   return (
     <div className="mx-auto max-w-md px-4 pb-28">
       {/* header */}
-      <div className="safe-top mb-3 flex items-center justify-between px-1 pt-2">
+      <div className="safe-top mb-4 flex items-end justify-between px-1 pt-2">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-ink/40">{greeting}</p>
-          <h1 className="font-display text-2xl font-semibold text-ink">{profile.name}'s Weather</h1>
-        </div>
-        <div className="rounded-full bg-white/70 px-3 py-1.5 text-xs font-bold text-ink/50 shadow-card">
-          {shortDate(today)}
+          <p className="eyebrow">
+            {greeting} · {shortDate(today)}
+          </p>
+          <h1 className="page-title mt-1">{profile.name}'s Weather</h1>
         </div>
       </div>
 
       {/* ── Hero weather card (centered, premium) ── */}
+      <div className="relative">
+        <div
+          className="glow -left-10 -top-8 h-44 w-44"
+          style={{ background: `radial-gradient(circle, ${sky.accent}66, transparent 65%)` }}
+        />
+        <div
+          className="glow -right-8 bottom-0 h-40 w-40"
+          style={{ background: 'radial-gradient(circle, rgba(124,198,255,0.35), transparent 65%)' }}
+        />
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: 'spring', stiffness: 90, damping: 18 }}
-        className="relative overflow-hidden rounded-[2.25rem] shadow-soft"
+        className="relative overflow-hidden rounded-[2.25rem] border border-white/40 shadow-soft"
         style={{ background: `linear-gradient(165deg, ${sky.from} 0%, ${sky.to} 100%)` }}
       >
         {/* ambient depth */}
@@ -113,6 +121,7 @@ export default function Home({ onOpenDay }: { onOpenDay: (d: ISODate) => void })
           </p>
         </div>
       </motion.div>
+      </div>
 
       {/* period countdown + log today */}
       <div className="mt-3 grid grid-cols-2 gap-3">
@@ -149,10 +158,14 @@ export default function Home({ onOpenDay }: { onOpenDay: (d: ISODate) => void })
         {window.map((d, idx) => {
           const ddark = isDarkSky(d.weather)
           return (
-            <button
+            <motion.button
               key={d.date}
               onClick={() => onOpenDay(d.date)}
-              className="relative flex flex-col items-center overflow-hidden rounded-[1.6rem] border border-white/50 p-3 shadow-card transition active:scale-[0.97]"
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.12 + idx * 0.07 }}
+              whileTap={{ scale: 0.93 }}
+              className="relative flex flex-col items-center overflow-hidden rounded-[1.6rem] border border-white/50 p-3 shadow-card"
               style={{ background: `linear-gradient(160deg, ${SKY[d.weather].from}, ${SKY[d.weather].to})` }}
             >
               <p className={`text-xs font-bold ${ddark ? 'text-white/90' : 'text-ink/65'}`}>
@@ -170,7 +183,7 @@ export default function Home({ onOpenDay }: { onOpenDay: (d: ISODate) => void })
                   <TornadoDot solid={d.tornadoLevel === 'tornado'} />
                 </span>
               )}
-            </button>
+            </motion.button>
           )
         })}
       </div>

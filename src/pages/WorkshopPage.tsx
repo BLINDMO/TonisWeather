@@ -12,27 +12,39 @@ export default function WorkshopPage({ openPromptId }: { openPromptId?: string |
   )
 
   return (
-    <div className="mx-auto max-w-md px-4 pb-28">
-      <div className="safe-top px-1 pb-3 pt-3">
-        <h1 className="font-display text-2xl font-semibold text-ink">Emotion Workshop</h1>
-        <p className="mt-1 text-sm text-ink/55">
+    <div className="mx-auto max-w-md px-4 pb-36">
+      <div className="safe-top px-1 pb-4 pt-3">
+        <p className="eyebrow">A softer place to land</p>
+        <h1 className="page-title mt-1">Workshop</h1>
+        <p className="mt-2 text-sm leading-relaxed text-ink/55">
           Gentle writing to shift your brain toward what's good and lasting. Perfect for a tornado day.
         </p>
       </div>
 
-      <div className="space-y-3">
+      <div className="relative space-y-3">
+        <div
+          className="glow -left-10 top-6 h-40 w-40"
+          style={{ background: 'radial-gradient(circle, rgba(255,209,102,0.35), transparent 65%)' }}
+        />
+        <div
+          className="glow -right-8 bottom-4 h-44 w-44"
+          style={{ background: 'radial-gradient(circle, rgba(255,143,177,0.3), transparent 65%)' }}
+        />
         {WORKSHOP_PROMPTS.map((p, i) => (
           <motion.button
             key={p.id}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.04 }}
+            transition={{ delay: i * 0.05 }}
+            whileTap={{ scale: 0.97 }}
             onClick={() => setActive(p)}
-            className="flex w-full items-center gap-4 rounded-4xl border border-white/60 bg-white p-4 text-left shadow-card transition active:scale-[0.98]"
+            className="card relative flex w-full items-center gap-4 p-4 text-left"
           >
             <div
-              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-3xl text-3xl"
-              style={{ background: `${p.accent}22` }}
+              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-3xl text-3xl shadow-card"
+              style={{
+                background: `linear-gradient(150deg, ${p.accent}30, ${p.accent}55)`,
+              }}
             >
               {p.icon}
             </div>
@@ -40,16 +52,16 @@ export default function WorkshopPage({ openPromptId }: { openPromptId?: string |
               <h3 className="font-display text-lg font-semibold leading-tight text-ink">{p.title}</h3>
               <p className="mt-0.5 line-clamp-2 text-xs text-ink/50">{p.intro}</p>
             </div>
-            <span className="text-ink/30">›</span>
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-ink/35 shadow-card">
+              ›
+            </span>
           </motion.button>
         ))}
       </div>
 
       {entries.length > 0 && (
         <>
-          <h2 className="mb-3 mt-8 px-1 text-sm font-bold uppercase tracking-wider text-ink/40">
-            Your reflections
-          </h2>
+          <h2 className="eyebrow mb-3 mt-8 px-1">Your reflections</h2>
           <div className="space-y-3">
             {entries.map((e) => (
               <SavedEntry key={e.id} id={e.id} title={e.promptTitle} when={e.createdAt} answers={e.answers} />
@@ -225,7 +237,8 @@ function PromptEditor({
           <button
             onClick={save}
             disabled={saved}
-            className="w-full rounded-full bg-dusk py-4 text-base font-bold text-white shadow-soft transition active:scale-[0.98] disabled:opacity-70"
+            className="w-full rounded-full py-4 text-base font-bold text-white shadow-soft transition active:scale-[0.98] disabled:opacity-70"
+            style={{ background: 'linear-gradient(150deg, #7B6CF6, #6d5dfc 60%, #8a5fe0)' }}
           >
             {saved ? 'Saved 💛' : 'Save reflection'}
           </button>

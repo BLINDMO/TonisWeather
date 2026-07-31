@@ -47,9 +47,12 @@ export default function SettingsPage() {
   const moodLogs = Object.values(logs).filter((l) => typeof l.mood === 'number').length
 
   return (
-    <div className="mx-auto max-w-md px-4 pb-28">
-      <div className="safe-top flex items-center justify-between px-1 pb-3 pt-3">
-        <h1 className="font-display text-2xl font-semibold text-ink">Me & Settings</h1>
+    <div className="mx-auto max-w-md px-4 pb-36">
+      <div className="safe-top flex items-end justify-between px-1 pb-4 pt-3">
+        <div>
+          <p className="eyebrow">Settings & data</p>
+          <h1 className="page-title mt-1">Me</h1>
+        </div>
         <Giraffe size={56} wave={false} />
       </div>
 
@@ -144,8 +147,8 @@ export default function SettingsPage() {
               <button
                 key={f.id}
                 onClick={() => setSetting('fontTheme', f.id)}
-                className={`rounded-3xl border-2 p-3 text-left transition active:scale-[0.97] ${
-                  active ? 'border-dusk bg-dusk/5' : 'border-black/5 bg-white'
+                className={`rounded-3xl border-2 p-3 text-left backdrop-blur transition active:scale-[0.97] ${
+                  active ? 'border-dusk bg-dusk/5 shadow-card' : 'border-white/70 bg-white/60'
                 }`}
               >
                 <div className="text-2xl leading-tight text-ink" style={{ fontFamily: f.display }}>
@@ -188,7 +191,8 @@ export default function SettingsPage() {
         <div className="flex gap-3">
           <button
             onClick={doExport}
-            className="flex-1 rounded-2xl bg-dusk py-3 text-sm font-bold text-white active:scale-95"
+            className="flex-1 rounded-2xl py-3 text-sm font-bold text-white active:scale-95"
+            style={{ background: 'linear-gradient(150deg, #7B6CF6, #6d5dfc 60%, #8a5fe0)' }}
           >
             ⬇️ Export backup
           </button>
@@ -245,7 +249,7 @@ function Stat({ label, value }: { label: string; value: number }) {
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="card mb-3 p-5">
-      <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-ink/40">{title}</h3>
+      <h3 className="eyebrow mb-3">{title}</h3>
       <div className="space-y-1">{children}</div>
     </div>
   )

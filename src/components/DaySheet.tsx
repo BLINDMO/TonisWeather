@@ -217,7 +217,8 @@ export default function DaySheet({ date, onClose, onHardDay }: Props) {
             <div className="fixed inset-x-0 bottom-0 mx-auto max-w-md border-t border-black/5 bg-white/95 px-6 pb-6 pt-3 backdrop-blur safe-bottom">
               <button
                 onClick={save}
-                className="w-full rounded-full bg-dusk py-4 text-base font-bold text-white shadow-soft transition active:scale-[0.98]"
+                className="w-full rounded-full py-4 text-base font-bold text-white shadow-soft transition active:scale-[0.98]"
+                style={{ background: 'linear-gradient(150deg, #7B6CF6, #6d5dfc 60%, #8a5fe0)' }}
               >
                 {date === todayISO() ? 'Save today' : 'Save'}
               </button>
